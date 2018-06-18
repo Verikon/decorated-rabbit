@@ -124,6 +124,7 @@ export default class DecoratedRabbit extends EventEmitter{
 			await Promise.all(channelDCs);
 
 			if(this.connection) {
+
 				await this.connection.close();
 			}
 
@@ -194,7 +195,6 @@ export default class DecoratedRabbit extends EventEmitter{
 	 */
 	handleError( method, error, kill ) {
 
-		console.log('!@>#<SFAAS', method, kill);
 		if(kill){
 			console.error(error);
 			process.exit();

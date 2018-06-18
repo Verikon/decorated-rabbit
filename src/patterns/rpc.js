@@ -84,6 +84,7 @@ export default class RPC {
 			await provision.channel.close();
 
 			provision.provisioned = false;
+
 			return {success: true};
 
 		} catch(err) {
