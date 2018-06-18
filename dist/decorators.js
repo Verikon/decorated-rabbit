@@ -89,7 +89,7 @@ let RabbitProvisions = {
 
 				//disconnect the instance
 				let result = await this[attr].disconnect({ close: killInstance });
-				if (!result.success) throw new Error('Could not close unused decorated-rabbit instance');
+				if (!result.success) throw new Error('Could not close decorated-rabbit instance');
 
 				//kill the instance, nothing is using it.
 				if (killInstance) {

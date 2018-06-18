@@ -55,7 +55,8 @@ let DecoratedRabbit = class DecoratedRabbit extends _events.EventEmitter {
 		};
 
 		this.state = {
-			connected: false
+			connected: false,
+			initialized: false
 		};
 	}
 
@@ -63,7 +64,8 @@ let DecoratedRabbit = class DecoratedRabbit extends _events.EventEmitter {
   * Initialize the instance.
   * 
   * @param {Object} args the argument object
-  * @param {String} args.endpoint the endpoint to connect to.
+  * @param {String} args.endpoint the endpoint to connect to, default ()
+  * @param {String} args.exchange the exchange to construct with
   */
 	async initialize(args) {
 
@@ -80,6 +82,8 @@ let DecoratedRabbit = class DecoratedRabbit extends _events.EventEmitter {
 			let connected = await this.connect({ context: context });
 
 			(0, _assert2.default)(connected.success, 'Initialization failed');
+
+			this.state.initialized = true;
 
 			return {
 				success: true,
@@ -130,15 +134,16 @@ let DecoratedRabbit = class DecoratedRabbit extends _events.EventEmitter {
 
 		try {
 
-			const channelDCs = this.provisions.map(prov => {
+			//if this is uninitialized, return true (nothing to do/disconnect)
+			if (!this.state.initialized) return { success: true };
+
+			//unprovision all listeners
+			await Promise.all(this.provisions.map(prov => {
 				return this[prov.type].unprovision({ provision: prov });
-			});
+			}));
 
-			await Promise.all(channelDCs);
-
-			if (this.connection) {
-				await this.connection.close();
-			}
+			//kill the connection
+			await this.connection.close();
 
 			return { success: true };
 		} catch (err) {
@@ -201,7 +206,6 @@ let DecoratedRabbit = class DecoratedRabbit extends _events.EventEmitter {
   */
 	handleError(method, error, kill) {
 
-		console.log('!@>#<SFAAS', method, kill);
 		if (kill) {
 			console.error(error);
 			process.exit();
