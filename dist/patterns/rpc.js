@@ -25,7 +25,8 @@ let RPC = class RPC {
 			/**
     * Provision an RPC queue listener.
     * 
-    * @param {Object} args the argument object. 
+    * @param {Object} args the argument object.
+    * @param {*} args.context the context to bind the listener to. 
     */
 			async provision(args) {
 
@@ -34,6 +35,7 @@ let RPC = class RPC {
 									args = args || {};
 									(0, _assert2.default)(args.provision, 'decorated-rabbit - rpc::provision was not argued a provision');
 
+									const { context } = args;
 									let { endpoint, handler, options } = args.provision;
 
 									options = options || {};
@@ -43,6 +45,9 @@ let RPC = class RPC {
 									(0, _assert2.default)(handler, 'cannot provision rpc without a handler function');
 
 									let channel;
+
+									//apply the argued context
+									handler = context ? handler.bind(context) : handler;
 
 									//set up the endpoint.
 									endpoint = this.mq.options.prefix_exchange ? this.mq.exchange + '.' + endpoint : endpoint;
@@ -65,6 +70,8 @@ let RPC = class RPC {
 
 												channel.sendToQueue(msg.properties.replyTo, new Buffer(JSON.stringify(response)), {});
 									}, { noAck: true });
+
+									console.log('Provisioned RPC::' + endpoint);
 
 									return { success: true, channel: channel, tag: cons.consumerTag };
 						} catch (err) {

@@ -28,12 +28,13 @@ let RabbitProvisions = {
   * @param {Object} args the argument object.
   * @param {String} args.attr the attribute to apply the DecoratedRabbit instance with upon the decorated class
   * @param {String} args.instance whilst we provide a default singleton, you can run multiple instances and refer to them by name, the name set by this vairable (default is 'default' - the default singleton)
+  * @param {*} args.context the default context to bind listeners to, you should never need to change this; default the class being decorated.
   */
 };const withRabbit = exports.withRabbit = function (args) {
 
 	args = args || {};
 
-	let { instance, attr, initialize, endpoint, exchange } = args;
+	let { instance, attr, initialize, endpoint, exchange, context } = args;
 
 	//default initialization true.
 	initialize = initialize === undefined ? true : initialize;
@@ -58,7 +59,10 @@ let RabbitProvisions = {
 					return target.prototype[prov.endpoint] === prov.handler;
 				});
 
-				let provisioned_args = Object.assign({}, args, { provisions: classProvisions });
+				//set up the default context (this.)
+				context = context === undefined ? this : context;
+
+				let provisioned_args = Object.assign({}, args, { provisions: classProvisions }, { context: context });
 
 				if (!RabbitInstances[instance] || !(RabbitInstances[instance].inst instanceof _DecoratedRabbit2.default)) {
 

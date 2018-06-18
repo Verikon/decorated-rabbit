@@ -24,12 +24,13 @@ export default class DecoratedRabbit extends EventEmitter{
 		props = props || {};
 		super(props);
 
-		const {provisions, exchange, endpoint, prefix_exchange} = props;
+		const {provisions, exchange, endpoint, prefix_exchange, context} = props;
 
 		this.connection = null;
 		this.provisions = provisions || [];
 		this.endpoint = endpoint || null;
 		this.exchange = exchange || null;
+		this.defaultContext = context || null;
 
 		this.options = {
 			prefix_exchange: (prefix_exchange || false)
@@ -48,20 +49,22 @@ export default class DecoratedRabbit extends EventEmitter{
 	 * @param {Object} args the argument object
 	 * @param {String} args.endpoint the endpoint to connect to, default ()
 	 * @param {String} args.exchange the exchange to construct with
+	 * @param {*} args.context the default context to bind all listeners to.
 	 */ 
 	async initialize( args ) {
 
 		try {
 
-			let {endpoint} = args;
+			let {endpoint, exchange} = args;
 
 			this.endpoint = endpoint || this.endpoint;
+			this.exchange = exchange || this.exchange;
 
 			//add the patterns.
 			this.cte = new CTE(this);
 			this.rpc = new RPC(this);
 
-			let connected = await this.connect({context: context});
+			let connected = await this.connect();
 
 			assert(connected.success, 'Initialization failed');
 
@@ -172,7 +175,7 @@ export default class DecoratedRabbit extends EventEmitter{
 				if(prov.provisioned) return;
 
 				//prov.context = args.context;			
-				let result = await this[prov.type].provision({provision: prov});
+				let result = await this[prov.type].provision({provision: prov, context: this.defaultContext});
 				assert(result.success, 'failed to provision.');
 
 				prov.channel = result.channel;
