@@ -1,10 +1,12 @@
 import {assert} from 'chai';
 
 import DecoratedRabbit, {withRabbit, rpc, cte} from '../src';
+import config from './config';
 
 import {
 	MockClass1,
-	MockClass2
+	MockClass2,
+	MockClass3
 } from './mocks/ClassMocks';
 
 let _realObject = obj => { return (!!obj) && (obj.constructor === Object); };
@@ -39,7 +41,7 @@ describe('decorated-rabbit tests', () => {
 
 	describe('Decoration', () => {
 
-		describe('Decorates MockClass1', () => {
+		describe('Decorates MockClass1 -no decoration', () => {
 
 			let ClassMock;
 
@@ -82,6 +84,11 @@ describe('decorated-rabbit tests', () => {
 					});
 				});
 
+				it('Sets the state.initialized true', () => {
+
+					assert(ClassMock.mq.state.initialized === true, 'Instance did not indicated it was in an initalized state');
+				});
+
 				it('Constructed the ClassMock1, assigning the argued props a:1', () =>{
 	
 					assert(ClassMock.args.a === 1, 'class arguments did not persist');
@@ -110,7 +117,7 @@ describe('decorated-rabbit tests', () => {
 
 		});
 
-		describe('Decorates MockClass2', () => {
+		describe('Decorates MockClass2 - 1 rpc listener decorated', () => {
 
 			let ClassMock;
 
@@ -148,6 +155,11 @@ describe('decorated-rabbit tests', () => {
 					});
 				});
 
+				it('Sets the state.initialized true', () => {
+
+					assert(ClassMock.mq.state.initialized === true, 'Instance did not indicated it was in an initalized state');
+				});
+
 				it('Received exactly 1 provisions', () => {
 
 					assert(ClassMock.mq.provisions.length === 1, 'Got '+ClassMock.mq.provisions.length+' provisions but expected 1');
@@ -178,6 +190,137 @@ describe('decorated-rabbit tests', () => {
 						});
 
 				});
+
+			});
+
+		});
+
+		describe('Decorates MockClass3 - not initialized until later', () => {
+
+			let ClassMock;
+
+			describe('Invocation', () => {
+
+				it('Instantiates the mocked class (Mockclass3)', () => {
+
+					ClassMock = new MockClass3({a:3});
+					assert(ClassMock instanceof MockClass3, 'not an instance');
+				});
+
+			});
+
+			describe('Assertions', () => {
+
+				it('Received exactly 1 provisions', () => {
+
+					assert(ClassMock.mq.provisions.length === 1, 'Got '+ClassMock.mq.provisions.length+' provisions but expected 1');
+				});
+
+				it('Provision was not provisioned', () => {
+
+					assert(ClassMock.mq.provisions[0].provisioned === false, 'did not flag the provision as provisioned|false');
+				});
+
+				it('Channel was not constructed', () => {
+
+					assert(ClassMock.mq.provisions[0].channel === null, 'channel was running');
+				});
+
+				it('Instance was flagged as uninitialized', () => {
+
+					assert(ClassMock.mq.state.initialized === false, 'instance stipulates its initalized');
+				});
+
+			});
+
+			describe('Cleanup', () => {
+
+				it('Invokes closeRabbit', () => {
+
+					return ClassMock.closeRabbit()
+						.then(res => {
+							assert(_realObject(res), 'did not get a response object');
+							assert(res.success === true, 'did not indicate success');
+						});
+
+				});
+
+			});
+
+		});
+
+	});
+
+	describe('Deferred Initialization', () => {
+
+		let ClassMock;
+
+		describe('Invocation', () => {
+
+			it('Instantiates the mocked class (Mockclass3)', () => {
+
+				ClassMock = new MockClass3({a:3});
+				assert(ClassMock instanceof MockClass3, 'not an instance');
+			});
+
+		});
+
+		describe('Test', () => {
+
+			it('invokes DecoratedRabbit::initialize with the correct arguments', () =>{
+
+				return ClassMock.mq.initialize(config)
+					.then(resp => {
+						assert(_realObject(resp), 'response was not an object');
+						assert(resp.success === true, 'did not indicate success');
+					})
+			});
+
+			it('Invokes methodA through rpc', () => {
+
+				return ClassMock.mq.rpc.invoke('methodA', {})
+					.then(resp => {
+						assert(_realObject(resp), 'response was not an object');
+						assert(resp.success === true, 'did not indicate success');
+						assert(resp.message === 'methodA', 'did not get the method name in the message');
+					})
+			});
+
+		});
+
+		describe('Assertions', () => {
+
+			it('Received exactly 1 provisions', () => {
+
+				assert(ClassMock.mq.provisions.length === 1, 'Got '+ClassMock.mq.provisions.length+' provisions but expected 1');
+			});
+
+			it('Provision was set up', () => {
+
+				assert(ClassMock.mq.provisions[0].provisioned === true, 'did not flag the provision as provisioned|true');
+			});
+
+			it('Channel was constructed and connected', () => {
+
+				assert(ClassMock.mq.provisions[0].channel, 'channel was not running');
+			});
+
+			it('Instance is flagged as initialized', () => {
+
+				assert(ClassMock.mq.state.initialized === true, 'instance stipulates its initalized');
+			});
+
+		});
+
+		describe('Cleanup', () => {
+
+			it('Invokes closeRabbit', () => {
+
+				return ClassMock.closeRabbit()
+					.then(res => {
+						assert(_realObject(res), 'did not get a response object');
+						assert(res.success === true, 'did not indicate success');
+					});
 
 			});
 

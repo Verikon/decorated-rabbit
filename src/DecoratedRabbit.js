@@ -36,7 +36,8 @@ export default class DecoratedRabbit extends EventEmitter{
 		};
 
 		this.state = {
-			connected: false
+			connected: false,
+			initialized: false
 		};
 
 	}
@@ -45,7 +46,8 @@ export default class DecoratedRabbit extends EventEmitter{
 	 * Initialize the instance.
 	 * 
 	 * @param {Object} args the argument object
-	 * @param {String} args.endpoint the endpoint to connect to.
+	 * @param {String} args.endpoint the endpoint to connect to, default ()
+	 * @param {String} args.exchange the exchange to construct with
 	 */ 
 	async initialize( args ) {
 
@@ -62,6 +64,8 @@ export default class DecoratedRabbit extends EventEmitter{
 			let connected = await this.connect({context: context});
 
 			assert(connected.success, 'Initialization failed');
+
+			this.state.initialized = true;
 
 			return {
 				success: true,
@@ -117,16 +121,16 @@ export default class DecoratedRabbit extends EventEmitter{
 
 		try {
 
-			const channelDCs = this.provisions.map(prov => {
+			//if this is uninitialized, return true (nothing to do/disconnect)
+			if(!this.state.initialized) return {success:true};
+
+			//unprovision all listeners
+			await Promise.all( this.provisions.map(prov => {
 				return this[prov.type].unprovision({provision: prov});
-			});
+			}));
 
-			await Promise.all(channelDCs);
-
-			if(this.connection) {
-
-				await this.connection.close();
-			}
+			//kill the connection
+			await this.connection.close();
 
 			return {success:true};
 

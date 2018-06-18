@@ -26,3 +26,17 @@ export class MockClass2 {
 		return {success:true, message:3333};
 	}
 }
+
+@withRabbit({initialize:false})
+export class MockClass3 {
+
+	constructor( args ) {
+		this.args = args;
+	}
+
+	@rpc()
+	methodA() {
+
+		return {success:true, message:'methodA'};
+	}
+}
