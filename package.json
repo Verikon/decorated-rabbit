@@ -1,0 +1,24 @@
+{
+	"name": "decorated-rabbit",
+	"version": "0.1.0",
+	"main": "dist/index.js",
+	"repository": "git@github.com:Verikon/decorated-rabbit.git",
+	"author": "Bren Norris <bren@launchboard.com>",
+	"license": "MIT",
+	"scripts": {
+		"compile": "babel ./src --out-dir ./dist",
+		"testone": "mocha --require babel-core/register ",
+		"test": "mocha --require babel-core/register ./spec"
+	},
+	"devDependencies": {
+		"babel-cli": "^6.26.0",
+		"babel-plugin-transform-decorators-legacy": "^1.3.4",
+		"babel-preset-env": "^1.7.0",
+		"chai": "^4.1.2",
+		"mocha": "^5.2.0"
+	},
+	"dependencies": {
+		"amqplib": "^0.5.2",
+		"co": "^4.6.0"
+	}
+}

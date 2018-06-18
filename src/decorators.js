@@ -1,0 +1,144 @@
+import DecoratedRabbit from './DecoratedRabbit';
+import crypto from 'crypto';
+
+let RabbitInstances = {
+	default: null
+};
+
+let RabbitProvisions = {
+	default: []
+}
+
+/**
+ * DecoratedRabbit main decorator.
+ * 
+ * @param {Object} args the argument object.
+ * @param {String} args.attr the attribute to apply the DecoratedRabbit instance with upon the decorated class
+ * @param {String} args.instance whilst we provide a default singleton, you can run multiple instances and refer to them by name, the name set by this vairable (default is 'default' - the default singleton)
+ */
+export const withRabbit = function( args ) {
+
+	args = args || {};
+
+	let {instance, attr, initialize, endpoint, exchange} = args;
+
+	//default initialization true.
+	initialize = initialize === undefined ? true : initialize;
+
+	//default the instance to the default singleton
+	instance = instance === undefined ? 'default' : instance;
+
+	//default the attribute to 'mq'
+	attr = attr === undefined ? 'mq' : attr;
+
+	return function( target ) {
+
+		let id = crypto.randomBytes(16).toString("hex");
+
+		class WrappedRabbit extends target {
+
+			constructor( cargs ) {
+
+				super(cargs);
+
+				let classProvisions = RabbitProvisions[instance].filter(prov => {
+					return target.prototype[prov.endpoint] === prov.handler;
+				});
+
+				let provisioned_args = Object.assign({}, args, {provisions: classProvisions});
+
+				if(!RabbitInstances[instance] || !(RabbitInstances[instance].inst instanceof DecoratedRabbit)) {
+
+					RabbitInstances[instance] =  {
+						inst: new DecoratedRabbit(provisioned_args),
+						ids: [id]
+					}
+				} else {
+					RabbitInstances[instance].ids.push(id);
+				}
+
+				this[attr] = RabbitInstances[instance].inst;
+
+				if(initialize){
+					this[attr].initialize(args);
+				}
+			}
+
+			async closeRabbit( args ) {
+
+				//pull the id from the list of listening classes.
+				RabbitInstances[instance].ids = RabbitInstances[instance].ids.filter(iid => { return iid !== id });
+
+				//if nothing is using this now, kill the reference so it can GC properly.
+				const killInstance = !RabbitInstances[instance].ids.length;
+
+				//disconnect the instance
+				let result = await this[attr].disconnect({close: killInstance});
+				if(!result.success) throw new Error('Could not close unused decorated-rabbit instance');
+
+				//kill the instance, nothing is using it.
+				if(killInstance) {
+
+					//dereference the instance entirely.
+					delete RabbitInstances[instance].inst;
+
+					//delete the instance && if its the default, set it null.
+					delete RabbitInstances[instance];
+					if(instance === 'default') RabbitInstances.default = null;
+
+					//tag the instance as uninitialized.
+					//this[attr].props.initialized = false;
+				}
+
+				return { success: true };
+			}
+		}
+
+		return WrappedRabbit;
+
+	}
+
+}
+
+export const rpc = function( options ) {
+
+	options = options || {};
+	options.instance = options.instance || 'default';
+
+	const {instance} = options;
+
+	return function( fn, name, descriptor ) {
+
+		RabbitProvisions[instance].push({
+			type: 'rpc',
+			endpoint: name,
+			handler: descriptor.value,
+			options: options,
+			channel: null,
+			provisioned: false
+		});
+
+		return descriptor.value;
+	}
+
+};
+
+export const cte = function( options ) {
+
+	options = options || {};
+	options.instance = options.instance || 'default';
+
+	const {instance} = options;
+
+	return function( fn, name, descriptor ) {
+
+		RabbitInstances[instance].provisions.push({
+			type: 'cte',
+			endpoint: name,
+			handler: descriptor.value,
+			options: options
+		});
+
+		return descriptor.value;
+	}
+}
