@@ -6,7 +6,7 @@ This library provides NodeJS service applications with both a client and service
 
 Supported message-queue patterns:
 
-    - [RPC (remote procedure call)](http://www.enterpriseintegrationpatterns.com/patterns/messaging/EncapsulatedSynchronousIntegration.html)
+    - RPC (remote procedure call)
     - Worker (competing consumers pattern)
     - CTE (consumer to exchange)
 
