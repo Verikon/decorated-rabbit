@@ -6,9 +6,10 @@ This library provides NodeJS service applications with both a client and service
 
 Supported message-queue patterns:
 
-    - RPC (remote procedure call)
-    - Worker (competing consumers pattern)
-    - CTE (consumer to exchange)
+[RPC (remote procedure call)](https://www.enterpriseintegrationpatterns.com/patterns/messaging/EncapsulatedSynchronousIntegration.html)
+
+[Worker (competing consumers pattern)](http://www.enterpriseintegrationpatterns.com/patterns/messaging/CompetingConsumers.html)
+
 
 It is the project goal to supply implementations for all of the RabbitMQ patterns (see https://www.rabbitmq.com/getstarted.html) but more.
 
