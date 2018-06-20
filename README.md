@@ -7,7 +7,7 @@ This library provides NodeJS service applications with both a client and service
 Supported message-queue patterns:
 
     - RPC (remote procedure call)
-    - Worker
+    - Worker (competing consumers pattern)
     - CTE (consumer to exchange)
 
 It is the project goal to supply implementations for all of the RabbitMQ patterns (see https://www.rabbitmq.com/getstarted.html) but more.
@@ -33,10 +33,10 @@ import {DecoratedRabbit} from 'decorated-rabbit';
 
 @withRabbit({endpoint: 'amqp://<user>:<pass>@your_rabbit_mq:<port>', exchange: 'yourexchange'})
 class MyClass {
-  async invokeThat() {
 
-    let response = await this.mq.rpc.invoke('myRPCListener', {value: 1});
-    console.log(response); // {addage:2}
-  }
+    async invokeThat() {
+        let response = await this.mq.rpc.invoke('myRPCListener', {value: 1});
+        console.log(response); // {addage:2}
+    }
 }
 ```
