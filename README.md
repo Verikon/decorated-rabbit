@@ -30,6 +30,7 @@ class MyClass {
 ## Usage as a client
 ```
 import {DecoratedRabbit} from 'decorated-rabbit';
+
 @withRabbit({endpoint: 'amqp://<user>:<pass>@your_rabbit_mq:<port>', exchange: 'yourexchange'})
 class MyClass {
   async invokeThat() {
