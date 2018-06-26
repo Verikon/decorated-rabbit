@@ -73,6 +73,8 @@ let DecoratedRabbit = class DecoratedRabbit extends _events.EventEmitter {
 
 		try {
 
+			args = args || {};
+
 			let { endpoint, exchange } = args;
 
 			this.endpoint = endpoint || this.endpoint;

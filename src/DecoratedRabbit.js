@@ -55,6 +55,8 @@ export default class DecoratedRabbit extends EventEmitter{
 
 		try {
 
+			args = args || {};
+
 			let {endpoint, exchange} = args;
 
 			this.endpoint = endpoint || this.endpoint;
