@@ -10,6 +10,7 @@ Supported message-queue patterns:
 
 [Worker (competing consumers pattern)](http://www.enterpriseintegrationpatterns.com/patterns/messaging/CompetingConsumers.html)
 
+[FNF (fire and forget)](https://www.rabbitmq.com/tutorials/tutorial-one-javascript.html)
 
 It is the project goal to supply implementations for all of the RabbitMQ patterns (see https://www.rabbitmq.com/getstarted.html) but more.
 

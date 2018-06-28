@@ -1,6 +1,8 @@
 import {assert} from 'chai';
+import fs from 'fs';
+import path from 'path';
 
-import DecoratedRabbit, {withRabbit, rpc, cte} from '../src';
+import DecoratedRabbit, {withRabbit, rpc, cte, pubsub, fnf} from '../src';
 import config from './config';
 
 import {
@@ -11,13 +13,15 @@ import {
 
 let _realObject = obj => { return (!!obj) && (obj.constructor === Object); };
 
-describe('decorated-rabbit tests', () => {
+describe('decorated-rabbit tests', function() {
+
+	this.timeout('15s');
 
 	describe('Prepartion', () => {
 
 		describe('Test Imports', () => {
 
-			it('DecoratedRAbbit is a class', () => {
+			it('DecoratedRabbit is a class', () => {
 
 				assert(typeof DecoratedRabbit === 'function', 'not a function (classes are typed functions)');
 
@@ -33,6 +37,16 @@ describe('decorated-rabbit tests', () => {
 			it('cte is a function', () => {
 
 				assert(typeof cte === 'function', 'failed.');
+			});
+
+			it('pubsub is a function', () => {
+
+				assert(typeof pubsub === 'function', 'failed.');
+			});
+
+			it('fnf is a function', () => {
+
+				assert(typeof fnf === 'function', 'failed.');
 			});
 
 		});
@@ -162,7 +176,7 @@ describe('decorated-rabbit tests', () => {
 
 				it('Received exactly 1 provisions', () => {
 
-					assert(ClassMock.mq.provisions.length === 1, 'Got '+ClassMock.mq.provisions.length+' provisions but expected 1');
+					assert(ClassMock.mq.provisions.length === 2, 'Got '+ClassMock.mq.provisions.length+' provisions but expected 2');
 					assert(ClassMock.mq.provisions[0].provisioned, 'did not flag the provision as provisioned|true');
 					assert(ClassMock.mq.provisions[0].channel, 'channel was not up and running');
 				});
@@ -329,7 +343,7 @@ describe('decorated-rabbit tests', () => {
 
 	describe('Patterns', () => {
 
-		describe('RPC', () => {
+		describe('RPC (remote procedure call)', () => {
 
 			let ClassMock;
 
@@ -365,6 +379,95 @@ describe('decorated-rabbit tests', () => {
 						})
 				});
 
+
+
+			});
+
+			describe('Cleanup', () => {
+
+				it('Closes Rabbit', () => {
+
+					return ClassMock.closeRabbit()
+							.then(res => {
+								assert(_realObject(res), 'did not get a response object');
+								assert(res.success === true, 'did not indicate success');
+							});
+
+				});
+
+			});
+
+		});
+
+		describe('FNF (fire and forget)', () => {
+
+			let ClassMock;
+
+			describe('Prepartion', () => {
+
+				it('Instantiates the mocked class (MockClass3)', () => {
+
+					return new Promise((resolve, reject) => {
+						
+						ClassMock = new MockClass2();
+						ClassMock.mq.on('connected', () => {
+							resolve();
+						})
+					});
+				});
+
+				it('Has provisioned the test RPC endpoint/queue', () => {
+
+					assert(ClassMock.mq.provisions.find(prov=> { return prov.endpoint === 'test_rpc_method' && prov.provisioned; }), 'did not find the test listener');
+				});
+			});
+
+			describe('Tests', () => {
+
+				it('ClassMock has the fnf pattern', () => {
+
+					assert(ClassMock.mq.fnf, 'fnf does not exist');
+				});
+
+				it('FNF pattern has the invoke method', () => {
+
+					assert(typeof ClassMock.mq.fnf.invoke === 'function', 'failed.');
+				});
+
+				it('Invokes the test endpoint (testFireAndForget)', ()=> {
+
+					return ClassMock.mq.fnf.invoke('testFireAndForget', {})
+						.then(resp =>{
+							assert(_realObject(resp), 'failed - response not an object');
+							assert(resp.success, 'failed - did not indicate success:true');
+						})
+				});
+
+				it('endpoint (testFireAndForget) wrote a file to disc', () => {
+
+					return new Promise((res,rej) => {
+
+						//give a second to permit the endpoint to write its file.
+						setTimeout(e => {
+
+							let loc = path.resolve(__dirname, 'mocks', 'test1.json');
+
+							assert(fs.existsSync(loc), 'failed. test file doesnt exist');
+
+							let contents = fs.readFileSync(loc, 'utf8');
+							contents = JSON.parse(contents);
+
+							assert(contents.test === 'that', 'did not parse Test file to JSON');
+
+							fs.unlinkSync(loc);
+
+							res(true);
+
+						}, 1000);
+
+					});
+
+				});
 
 			});
 

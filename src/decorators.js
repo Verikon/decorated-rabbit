@@ -32,7 +32,6 @@ export const withRabbit = function( args ) {
 	//default the attribute to 'mq'
 	attr = attr === undefined ? 'mq' : attr;
 
-
 	return function( target ) {
 
 		let id = crypto.randomBytes(16).toString("hex");
@@ -79,6 +78,7 @@ export const withRabbit = function( args ) {
 
 				//disconnect the instance
 				let result = await this[attr].disconnect({close: killInstance});
+
 				if(!result.success) throw new Error('Could not close decorated-rabbit instance');
 
 				//kill the instance, nothing is using it.
@@ -145,5 +145,52 @@ export const cte = function( options ) {
 		});
 
 		return descriptor.value;
+	}
+}
+
+export const pubsub = function( options ) {
+
+	options = options || {};
+	options.instance = options.instance || 'default';
+
+	const {instance} = options;
+
+	return function( fn, name, descriptor ) {
+
+		RabbitProvisions[instance].push({
+			type: 'pubsub',
+			endpoint: name,
+			handler: descriptor.value,
+			options: options,
+			channel: null,
+			provisioned: false
+		});
+
+		return descriptor.value;
+
+	}
+
+};
+
+export const fnf = function( options ) {
+
+	options = options || {};
+	options.instance = options.instance || 'default';
+
+	const {instance} = options;
+
+	return function( fn, name, descriptor ) {
+
+		RabbitProvisions[instance].push({
+			type: 'fnf',
+			endpoint: name,
+			handler: descriptor.value,
+			options: options,
+			channel: null,
+			provisioned: false
+		});
+
+		return descriptor.value;
+
 	}
 }

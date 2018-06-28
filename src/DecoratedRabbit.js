@@ -5,6 +5,8 @@ import AMQP from 'amqplib';
 
 import CTE from './patterns/cte';
 import RPC from './patterns/rpc';
+import PUBSUB from './patterns/pubsub';
+import FNF from './patterns/fnf';
 
 export default class DecoratedRabbit extends EventEmitter{
 
@@ -65,6 +67,8 @@ export default class DecoratedRabbit extends EventEmitter{
 			//add the patterns.
 			this.cte = new CTE(this);
 			this.rpc = new RPC(this);
+			this.pubsub = new PUBSUB(this);
+			this.fnf = new FNF(this);
 
 			let connected = await this.connect();
 
@@ -129,9 +133,9 @@ export default class DecoratedRabbit extends EventEmitter{
 			//if this is uninitialized, return true (nothing to do/disconnect)
 			if(!this.state.initialized) return {success:true};
 
-			//unprovision all listeners
+			//deprovision all listeners
 			await Promise.all( this.provisions.map(prov => {
-				return this[prov.type].unprovision({provision: prov});
+				return this[prov.type].deprovision({provision: prov});
 			}));
 
 			//kill the connection

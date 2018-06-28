@@ -1,11 +1,12 @@
 import co from 'co';
 import assert from 'assert';
+import PatternBase from './PatternBase';
 
-export default class RPC {
+export default class RPC extends PatternBase {
 
 	constructor( main ) {
 
-		this.mq = main;
+		super(main);
 	}
 
 	/**
@@ -51,22 +52,22 @@ export default class RPC {
 			
 				let methodargs, response;
 			
-				methodargs = JSON.parse(msg.content.toString());
+				methodargs = this.decode(msg);
 				response = handler(methodargs);
 			
 				if(response instanceof Promise)
 					response = await response;
 			
-				channel.sendToQueue(msg.properties.replyTo, new Buffer(JSON.stringify(response)), {});
+				channel.sendToQueue(msg.properties.replyTo, this.encode(response), {});
 
 			}, {noAck: true});
 
-			console.log('Provisioned RPC::'+endpoint);
+			console.log('Provisioned RPC::'+endpoint+' --- '+JSON.stringify(options));
 
 			return {success:true, channel: channel, tag: cons.consumerTag };
 
 		} catch( err ) {
-			console.log('ERRRRRRRRRRRRR', err);
+
 			return {success:false, error: err};
 		}
 	}
@@ -78,7 +79,7 @@ export default class RPC {
 	 * 
 	 * @returns {Promise} {success:true} 
 	 */
-	async unprovision( args ) {
+	async deprovision( args ) {
 
 		try {
 
@@ -92,6 +93,7 @@ export default class RPC {
 
 			provision.provisioned = false;
 
+			console.log('Deprovisioned RPC::'+provision.endpoint);
 			return {success: true};
 
 		} catch(err) {
@@ -109,7 +111,7 @@ export default class RPC {
 	 * 
 	 * @returns {promise} 
 	 */
-	invoke( queue, message, options ) {
+	async invoke( queue, message, options ) {
 
 		return new Promise( async (resolve, reject) => {
 

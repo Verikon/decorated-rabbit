@@ -1,5 +1,7 @@
-import {withRabbit, rpc} from '../../src';
+import {withRabbit, rpc, fnf} from '../../src';
 import config from '../config';
+import fs from 'fs';
+import path from 'path';
 
 @withRabbit(config)
 export class MockClass1 {
@@ -25,6 +27,13 @@ export class MockClass2 {
 
 		return {success:true, message:3333};
 	}
+
+
+	@fnf()
+	testFireAndForget( args ) {
+
+		fs.writeFileSync(path.resolve(__dirname, 'test1.json'), JSON.stringify({test:'that'}));
+	}
 }
 
 @withRabbit({initialize:false})
@@ -39,4 +48,6 @@ export class MockClass3 {
 
 		return {success:true, message:'methodA'};
 	}
+
+
 }
