@@ -1,4 +1,4 @@
-import PatternBase from './patternbase';
+import PatternBase from './PatternBase';
 import assert from 'assert';
 
 export default class PUBSUB extends PatternBase{

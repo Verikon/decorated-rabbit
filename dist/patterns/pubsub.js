@@ -5,9 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = undefined;
 
-var _patternbase = require('./patternbase');
+var _PatternBase = require('./PatternBase');
 
-var _patternbase2 = _interopRequireDefault(_patternbase);
+var _PatternBase2 = _interopRequireDefault(_PatternBase);
 
 var _assert = require('assert');
 
@@ -15,7 +15,7 @@ var _assert2 = _interopRequireDefault(_assert);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-let PUBSUB = class PUBSUB extends _patternbase2.default {
+let PUBSUB = class PUBSUB extends _PatternBase2.default {
 
 	constructor(main) {
 
