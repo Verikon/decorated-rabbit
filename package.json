@@ -1,6 +1,6 @@
 {
 	"name": "decorated-rabbit",
-	"version": "0.1.5",
+	"version": "0.1.6",
 	"main": "dist/index.js",
 	"repository": "git@github.com:Verikon/decorated-rabbit.git",
 	"author": "Bren Norris <bren@launchboard.com>",

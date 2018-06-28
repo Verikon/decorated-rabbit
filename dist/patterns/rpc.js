@@ -13,13 +13,17 @@ var _assert = require('assert');
 
 var _assert2 = _interopRequireDefault(_assert);
 
+var _PatternBase = require('./PatternBase');
+
+var _PatternBase2 = _interopRequireDefault(_PatternBase);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-let RPC = class RPC {
+let RPC = class RPC extends _PatternBase2.default {
 
 			constructor(main) {
 
-						this.mq = main;
+						super(main);
 			}
 
 			/**
@@ -63,19 +67,19 @@ let RPC = class RPC {
 
 												let methodargs, response;
 
-												methodargs = JSON.parse(msg.content.toString());
+												methodargs = this.decode(msg);
 												response = handler(methodargs);
 
 												if (response instanceof Promise) response = await response;
 
-												channel.sendToQueue(msg.properties.replyTo, new Buffer(JSON.stringify(response)), {});
+												channel.sendToQueue(msg.properties.replyTo, this.encode(response), {});
 									}, { noAck: true });
 
-									console.log('Provisioned RPC::' + endpoint);
+									console.log('Provisioned RPC::' + endpoint + ' --- ' + JSON.stringify(options));
 
 									return { success: true, channel: channel, tag: cons.consumerTag };
 						} catch (err) {
-									console.log('ERRRRRRRRRRRRR', err);
+
 									return { success: false, error: err };
 						}
 			}
@@ -87,7 +91,7 @@ let RPC = class RPC {
     * 
     * @returns {Promise} {success:true} 
     */
-			async unprovision(args) {
+			async deprovision(args) {
 
 						try {
 
@@ -101,6 +105,7 @@ let RPC = class RPC {
 
 									provision.provisioned = false;
 
+									console.log('Deprovisioned RPC::' + provision.endpoint);
 									return { success: true };
 						} catch (err) {
 
@@ -117,7 +122,7 @@ let RPC = class RPC {
     * 
     * @returns {promise} 
     */
-			invoke(queue, message, options) {
+			async invoke(queue, message, options) {
 
 						return new Promise(async (resolve, reject) => {
 

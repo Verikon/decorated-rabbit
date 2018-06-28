@@ -23,6 +23,14 @@ var _rpc = require('./patterns/rpc');
 
 var _rpc2 = _interopRequireDefault(_rpc);
 
+var _pubsub = require('./patterns/pubsub');
+
+var _pubsub2 = _interopRequireDefault(_pubsub);
+
+var _fnf = require('./patterns/fnf');
+
+var _fnf2 = _interopRequireDefault(_fnf);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 let DecoratedRabbit = class DecoratedRabbit extends _events.EventEmitter {
@@ -83,6 +91,8 @@ let DecoratedRabbit = class DecoratedRabbit extends _events.EventEmitter {
 			//add the patterns.
 			this.cte = new _cte2.default(this);
 			this.rpc = new _rpc2.default(this);
+			this.pubsub = new _pubsub2.default(this);
+			this.fnf = new _fnf2.default(this);
 
 			let connected = await this.connect();
 
@@ -142,9 +152,9 @@ let DecoratedRabbit = class DecoratedRabbit extends _events.EventEmitter {
 			//if this is uninitialized, return true (nothing to do/disconnect)
 			if (!this.state.initialized) return { success: true };
 
-			//unprovision all listeners
+			//deprovision all listeners
 			await Promise.all(this.provisions.map(prov => {
-				return this[prov.type].unprovision({ provision: prov });
+				return this[prov.type].deprovision({ provision: prov });
 			}));
 
 			//kill the connection
