@@ -79,14 +79,11 @@ export default class RPC extends PatternBase {
 	 * 
 	 * @returns {Promise} {success:true} 
 	 */
-	async deprovision( args ) {
+	async deprovision({provision}) {
 
 		try {
 
-			args = args || {};
-			assert(args.provision, 'decorated-rabbit - rpc::provision was not argued a provision');
-
-			const {provision} = args;
+			assert(provision, 'decorated-rabbit - rpc::provision was not argued a provision');
 
 			await provision.channel.cancel(provision.tag);
 			await provision.channel.close();
