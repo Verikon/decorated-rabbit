@@ -1,7 +1,7 @@
 import PatternBase from './PatternBase';
 import assert from 'assert';
 
-export default class PUBSUB extends PatternBase{
+export default class Topic extends PatternBase{
 
 	constructor( main ) {
 
@@ -28,17 +28,21 @@ export default class PUBSUB extends PatternBase{
 			const exchange = provision.options.exchange || this.mq.exchange;
 			assert(exchange, 'Could not decorate method '+provision+' endpoint with pattern `pubsub` - exchange could not be determined. Either argue a default exchange to the instance, or option an exchange in via the decorator');
 
+			//determine the topic we're subscribing to.
+			const topic = provision.options.topic || '*';
+			assert(topic, 'Topic decorators require a topic. eg: @topic({topic: "my.topic"})');
+
 			//gain a channel.
 			channel = await this.mq.connection.createChannel();
 
 			//assert the exchange
-			channel.assertExchange(exchange, 'fanout', {durable: durable});
+			channel.assertExchange(exchange, 'topic', {durable: durable});
 
 			//build the queue
 			queue = await channel.assertQueue('', {exclusive:exclusive});
 
 			//bind the channel to the queue
-			channel.bindQueue(queue.queue, exchange, '');
+			channel.bindQueue(queue.queue, exchange, topic);
 
 			//set up the consumer
 			consumer = await channel.consume(queue.queue, async msg => {
@@ -54,7 +58,7 @@ export default class PUBSUB extends PatternBase{
 
 			}, {noAck: true});
 
-			return {success:true, channel: channel, tag: consumer.consumerTag };
+			return {success:true, channel: channel, tag: consumer.consumerTag};
 
 		} catch( err ) {
 
@@ -66,10 +70,12 @@ export default class PUBSUB extends PatternBase{
 	/**
 	 * 
 	 * @param {String|Array|Object} message the message to publish 
-	 * @param {String} exchange the exchange to publish the message to.
-	 *  
+	 * @param {Object} options the options object
+	 * @param {String} topic the topic to publish to
+	 * @param {String} exchange the exchange to publish the message to, default (instance default exchange)
+	 * 
 	 */
-	async publish( message, exchange ) {
+	async publish( message, topic, exchange ) {
 
 		try {
 
@@ -81,10 +87,10 @@ export default class PUBSUB extends PatternBase{
 			assert(exchange, 'Could not publish message - exchange could not be determined. Option "exchange": "<ExchangeName>"');
 
 			//assert the exchange.
-			channel.assertExchange(exchange, 'fanout', {durable: false});
+			channel.assertExchange(exchange, 'topic', {durable: false});
 
 			//publish a message
-			channel.publish(exchange, '', new Buffer(JSON.stringify(message)));
+			channel.publish(exchange, topic, new Buffer(JSON.stringify(message)));
 
 			return {success: true};
 

@@ -9,7 +9,8 @@ import {
 	MockClass1,
 	MockClass2,
 	MockClass3,
-	TestPubSub
+	TestPubSub,
+	TestTopic
 } from './mocks/ClassMocks';
 
 let _realObject = obj => { return (!!obj) && (obj.constructor === Object); };
@@ -550,6 +551,168 @@ describe('decorated-rabbit tests', function() {
 					});
 
 				});
+
+			});
+
+			describe('Cleanup', () => {
+
+				it('Closes Rabbit', () => {
+
+					return ClassMock.closeRabbit()
+							.then(res => {
+								assert(_realObject(res), 'did not get a response object');
+								assert(res.success === true, 'did not indicate success');
+							});
+
+				});
+
+			});
+
+		});
+
+		describe('Topic (topic)', () => {
+
+			let ClassMock;
+
+			describe('Preparation', () => {
+
+				it('Instantiates the mocked class (MockClass3)', () => {
+
+					return new Promise((resolve, reject) => {
+						
+						ClassMock = new TestTopic();
+						ClassMock.mq.on('connected', () => {
+							resolve();
+						})
+					});
+				});
+
+				it('Has provisioned the test RPC endpoint/queue', () => {
+
+					assert(ClassMock.mq.provisions.find(prov=> {return prov.endpoint === 'testTopic' && prov.provisioned; }), 'did not find the test listener');
+				});
+
+			});
+
+			describe('Tests', () => {
+
+				it('Class has the topic pattern', () => {
+
+					assert(ClassMock.mq.topic, 'topic does not exist');
+				});
+
+				it('Topic pattern has the publish method', () => {
+
+					assert(typeof ClassMock.mq.topic.publish === 'function', 'failed.');
+				});
+
+				it('publishes a message to my.topic', () => {
+
+					return new Promise((resolve, reject) => {
+
+						ClassMock.mq.topic.publish('test_topic_works', 'my.topic', 'test_topic')
+							.then(resp => {
+
+								assert(resp.success === true, 'did not indicate success');
+
+								setTimeout(e => {
+
+									let loc, contents;
+
+									loc = path.resolve(__dirname, 'mocks', 'my.topic.json');
+									assert(fs.existsSync(loc), 'failed. test file doesnt exist');
+									contents = fs.readFileSync(loc, 'utf8');
+									contents = JSON.parse(contents);
+									assert(contents.test === 'test_topic_works', 'did not parse Test file to JSON');
+									fs.unlinkSync(loc);
+
+									loc = path.resolve(__dirname, 'mocks', 'my.json');
+									assert(fs.existsSync(loc), 'failed. test file doesnt exist');
+									contents = fs.readFileSync(loc, 'utf8');
+									contents = JSON.parse(contents);
+									assert(contents.test === 'test_topic_works', 'did not parse Test file to JSON');
+									fs.unlinkSync(loc);
+
+									resolve(true);
+
+								}, 1000)
+
+							});
+
+					});
+
+				});
+
+				it('publishes a message exclusively to my.othertopic', () => {
+
+					return new Promise((resolve, reject) => {
+
+						ClassMock.mq.topic.publish('test_topic_works', 'my.othertopic', 'test_topic')
+							.then(resp => {
+
+								assert(resp.success === true, 'did not indicate success');
+
+								setTimeout(e => {
+									
+									let loc = path.resolve(__dirname, 'mocks', 'my.othertopic.json');
+									assert(fs.existsSync(loc), 'failed. test file doesnt exist');
+									let contents = fs.readFileSync(loc, 'utf8');
+									contents = JSON.parse(contents);
+									assert(contents.test === 'test_topic_works', 'did not parse Test file to JSON');
+									fs.unlinkSync(loc);
+									resolve(true);
+
+									loc = path.resolve(__dirname, 'mocks', 'my.json');
+									assert(fs.existsSync(loc), 'failed. test file doesnt exist');
+									contents = fs.readFileSync(loc, 'utf8');
+									contents = JSON.parse(contents);
+									assert(contents.test === 'test_topic_works', 'did not parse Test file to JSON');
+									fs.unlinkSync(loc);
+
+								}, 1000)
+
+							});
+
+					});
+
+				});
+
+				it('publishes a message exclusively to my.*', () => {
+
+					return new Promise((resolve, reject) => {
+
+						ClassMock.mq.topic.publish('test_topic_works', 'my.*', 'test_topic')
+							.then(resp => {
+
+								assert(resp.success === true, 'did not indicate success');
+
+								setTimeout(e => {
+
+									let loc, contents;
+
+									loc = path.resolve(__dirname, 'mocks', 'my.json');
+									assert(fs.existsSync(loc), 'failed. test file doesnt exist');
+									contents = fs.readFileSync(loc, 'utf8');
+									contents = JSON.parse(contents);
+									assert(contents.test === 'test_topic_works', 'did not parse Test file to JSON');
+									fs.unlinkSync(loc);
+
+									loc = path.resolve(__dirname, 'mocks', 'my.topic.json')
+									assert(!fs.existsSync(loc), 'failed. test file '+loc+' exists but should not');
+
+									loc = path.resolve(__dirname, 'mocks', 'my.othertopic.json')
+									assert(!fs.existsSync(loc), 'failed. test file '+loc+' exists but should not');
+
+									resolve(true);
+
+								}, 1000)
+
+							});
+
+					});
+
+				});
+
 
 			});
 

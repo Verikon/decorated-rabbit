@@ -7,6 +7,7 @@ import CTE from './patterns/cte';
 import RPC from './patterns/rpc';
 import PUBSUB from './patterns/pubsub';
 import FNF from './patterns/fnf';
+import Topic from './patterns/topic';
 
 export default class DecoratedRabbit extends EventEmitter{
 
@@ -69,6 +70,7 @@ export default class DecoratedRabbit extends EventEmitter{
 			this.rpc = new RPC(this);
 			this.pubsub = new PUBSUB(this);
 			this.fnf = new FNF(this);
+			this.topic = new Topic(this);
 
 			let connected = await this.connect();
 

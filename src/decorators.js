@@ -179,6 +179,37 @@ export const pubsub = function( options ) {
 
 };
 
+/**
+ * Decorate a function/method as a Topic listener.
+ * 
+ * @param {Object} options the options object
+ * @param {String} options.instance the rabbit instance to bind to (ie. the rabbitMQ server), default : 'default' - the default instance.
+ * @param {String} options.exchange the exchange to attach pub/sub to, default: the instance default exchange. 
+ */
+export const topic = function( options ) {
+
+	options = options || {};
+	options.instance = options.instance || 'default';
+
+	const {instance} = options;
+
+	return function( fn, name, descriptor ) {
+
+		RabbitProvisions[instance].push({
+			type: 'topic',
+			endpoint: name,
+			handler: descriptor.value,
+			options: options,
+			channel: null,
+			provisioned: false
+		});
+
+		return descriptor.value;
+
+	}
+
+};
+
 export const fnf = function( options ) {
 
 	options = options || {};

@@ -1,4 +1,4 @@
-import {withRabbit, rpc, fnf, pubsub} from '../../src';
+import {withRabbit, rpc, fnf, pubsub, topic} from '../../src';
 import config from '../config';
 import fs from 'fs';
 import path from 'path';
@@ -64,6 +64,33 @@ export class TestPubSub {
 	testPubSub( args ) {
 
 		fs.writeFileSync(path.resolve(__dirname, 'test2.json'), JSON.stringify({test: args}));
+	}
+
+}
+
+@withRabbit(config)
+export class TestTopic {
+
+	constructor( args ) {
+
+		this.args = args;
+	}
+
+	@topic({exchange: 'test_topic', topic:'my.topic'})
+	testTopic( args ) {
+
+		fs.writeFileSync(path.resolve(__dirname, 'my.topic.json'), JSON.stringify({test: args}));
+	}
+
+	@topic({exchange: 'test_topic', topic:'my.othertopic'})
+	testTopic2( args ) {
+		fs.writeFileSync(path.resolve(__dirname, 'my.othertopic.json'), JSON.stringify({test: args}));
+	}
+
+	@topic({exchange: 'test_topic', topic:'my.*'})
+	testTopic3( args ) {
+
+		fs.writeFileSync(path.resolve(__dirname, 'my.json'), JSON.stringify({test: args}));
 	}
 
 }
