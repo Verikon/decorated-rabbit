@@ -1,4 +1,4 @@
-import {withRabbit, rpc, fnf} from '../../src';
+import {withRabbit, rpc, fnf, pubsub} from '../../src';
 import config from '../config';
 import fs from 'fs';
 import path from 'path';
@@ -49,5 +49,21 @@ export class MockClass3 {
 		return {success:true, message:'methodA'};
 	}
 
+
+}
+
+@withRabbit(config)
+export class TestPubSub {
+
+	constructor( args ) {
+
+		this.args = args;
+	}
+
+	@pubsub()
+	testPubSub( args ) {
+
+		fs.writeFileSync(path.resolve(__dirname, 'test2.json'), JSON.stringify({test: args}));
+	}
 
 }

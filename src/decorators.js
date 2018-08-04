@@ -148,6 +148,13 @@ export const cte = function( options ) {
 	}
 }
 
+/**
+ * Decorate a function/method as a PubSub subscriber listener.
+ * 
+ * @param {Object} options the options object
+ * @param {String} options.instance the rabbit instance to bind to (ie. the rabbitMQ server), default : 'default' - the default instance.
+ * @param {String} options.exchange the exchange to attach pub/sub to, default: the instance default exchange. 
+ */
 export const pubsub = function( options ) {
 
 	options = options || {};

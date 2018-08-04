@@ -8,7 +8,8 @@ import config from './config';
 import {
 	MockClass1,
 	MockClass2,
-	MockClass3
+	MockClass3,
+	TestPubSub
 } from './mocks/ClassMocks';
 
 let _realObject = obj => { return (!!obj) && (obj.constructor === Object); };
@@ -174,7 +175,7 @@ describe('decorated-rabbit tests', function() {
 					assert(ClassMock.mq.state.initialized === true, 'Instance did not indicated it was in an initalized state');
 				});
 
-				it('Received exactly 1 provisions', () => {
+				it('Received exactly 2 provisions', () => {
 
 					assert(ClassMock.mq.provisions.length === 2, 'Got '+ClassMock.mq.provisions.length+' provisions but expected 2');
 					assert(ClassMock.mq.provisions[0].provisioned, 'did not flag the provision as provisioned|true');
@@ -464,6 +465,87 @@ describe('decorated-rabbit tests', function() {
 							res(true);
 
 						}, 1000);
+
+					});
+
+				});
+
+			});
+
+			describe('Cleanup', () => {
+
+				it('Closes Rabbit', () => {
+
+					return ClassMock.closeRabbit()
+							.then(res => {
+								assert(_realObject(res), 'did not get a response object');
+								assert(res.success === true, 'did not indicate success');
+							});
+
+				});
+
+			});
+
+		});
+
+		describe('PUBSUB (publish-subscribe)', () => {
+
+			let ClassMock;
+
+			describe('Preparation', () => {
+
+				it('Instantiates the mocked class (MockClass3)', () => {
+
+					return new Promise((resolve, reject) => {
+						
+						ClassMock = new TestPubSub();
+						ClassMock.mq.on('connected', () => {
+							resolve();
+						})
+					});
+				});
+
+				it('Has provisioned the test RPC endpoint/queue', () => {
+
+					assert(ClassMock.mq.provisions.find(prov=> {return prov.endpoint === 'testPubSub' && prov.provisioned; }), 'did not find the test listener');
+				});
+
+			});
+
+			describe('Tests', () => {
+
+				it('Class has the pubsub pattern', () => {
+
+					assert(ClassMock.mq.pubsub, 'pubsub does not exist');
+				});
+
+				it('PubSub pattern has the publish method', () => {
+
+					assert(typeof ClassMock.mq.pubsub.publish === 'function', 'failed.');
+				});
+
+				it('publishes a message ', () => {
+
+					return new Promise((resolve, reject) => {
+
+						ClassMock.mq.pubsub.publish('testpubsubworks')
+							.then(resp => {
+
+								assert(resp.success === true, 'did not indicate success');
+
+								setTimeout(e => {
+
+									let loc = path.resolve(__dirname, 'mocks', 'test2.json');
+									assert(fs.existsSync(loc), 'failed. test file doesnt exist');
+									let contents = fs.readFileSync(loc, 'utf8');
+									contents = JSON.parse(contents);
+									assert(contents.test === 'testpubsubworks', 'did not parse Test file to JSON');
+									fs.unlinkSync(loc);
+									resolve(true);
+
+								}, 1000)
+
+							});
 
 					});
 
