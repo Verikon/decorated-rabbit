@@ -184,7 +184,9 @@ export const pubsub = function( options ) {
  * 
  * @param {Object} options the options object
  * @param {String} options.instance the rabbit instance to bind to (ie. the rabbitMQ server), default : 'default' - the default instance.
- * @param {String} options.exchange the exchange to attach pub/sub to, default: the instance default exchange. 
+ * @param {String} options.exchange the exchange to attach this.subscriber/listener to, default: the instance default exchange. 
+ * @param {String} options.topic the topic pattern to attach this subscriber/listener to
+ * @param {String} options.subscribe exhange and topic in a single string ; eg {subscribe:'myExchange:mytopic.*}.
  */
 export const topic = function( options ) {
 

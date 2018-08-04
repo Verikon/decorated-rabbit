@@ -89,8 +89,11 @@ export class TestTopic {
 
 	@topic({exchange: 'test_topic', topic:'my.*'})
 	testTopic3( args ) {
-
 		fs.writeFileSync(path.resolve(__dirname, 'my.json'), JSON.stringify({test: args}));
 	}
 
+	@topic({subscribe:'test_topic:my.coolstringtopic'})
+	testTopic4( args ) {
+
+	}
 }

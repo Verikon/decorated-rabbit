@@ -24,6 +24,12 @@ export default class Topic extends PatternBase{
 			//apply the argued context
 			handler = context ? handler.bind(context) : handler;
 
+			if(typeof provision.options.subscribe === 'string') {
+				provision.options.exchange = provision.options.subscribe.split(':')[0];
+				provision.options.topic = provision.options.subscribe.split(':')[1];
+			}
+
+
 			//determine the exchange we're pubsubbing to.
 			const exchange = provision.options.exchange || this.mq.exchange;
 			assert(exchange, 'Could not decorate method '+provision+' endpoint with pattern `pubsub` - exchange could not be determined. Either argue a default exchange to the instance, or option an exchange in via the decorator');
