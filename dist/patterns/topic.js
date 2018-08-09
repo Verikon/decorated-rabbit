@@ -15,7 +15,7 @@ var _assert2 = _interopRequireDefault(_assert);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-let PUBSUB = class PUBSUB extends _PatternBase2.default {
+let Topic = class Topic extends _PatternBase2.default {
 
 	constructor(main) {
 
@@ -38,48 +38,62 @@ let PUBSUB = class PUBSUB extends _PatternBase2.default {
 			//apply the argued context
 			handler = context ? handler.bind(context) : handler;
 
+			if (typeof provision.options.subscribe === 'string') {
+				provision.options.exchange = provision.options.subscribe.split(':')[0];
+				provision.options.topic = provision.options.subscribe.split(':')[1];
+			}
+
 			//determine the exchange we're pubsubbing to.
 			const exchange = provision.options.exchange || this.mq.exchange;
 			(0, _assert2.default)(exchange, 'Could not decorate method ' + provision + ' endpoint with pattern `pubsub` - exchange could not be determined. Either argue a default exchange to the instance, or option an exchange in via the decorator');
+
+			//determine the topic we're subscribing to.
+			const topic = provision.options.topic || '*';
+			(0, _assert2.default)(topic, 'Topic decorators require a topic. eg: @topic({topic: "my.topic"})');
 
 			//gain a channel.
 			channel = await this.mq.connection.createChannel();
 
 			//assert the exchange
-			channel.assertExchange(exchange, 'fanout', { durable: durable });
+			channel.assertExchange(exchange, 'topic', { durable: durable });
 
 			//build the queue
 			queue = await channel.assertQueue('', { exclusive: exclusive });
 
 			//bind the channel to the queue
-			channel.bindQueue(queue.queue, exchange, '');
+			channel.bindQueue(queue.queue, exchange, topic);
 
 			//set up the consumer
 			consumer = await channel.consume(queue.queue, async msg => {
 
-				let methodargs, response;
+				let methodargs, routingKeys, response;
 
+				routingKeys = msg.fields.routingKey.split('.');
 				methodargs = this.decode(msg);
-				response = handler(methodargs);
+
+				response = handler(methodargs, routingKeys);
 
 				//retain execution if the listener is asynchronous.
 				if (response instanceof Promise) response = await response;
 			}, { noAck: true });
 
+			console.log('Provisioned Topic::' + endpoint + ' --- ' + JSON.stringify(provision.options));
 			return { success: true, channel: channel, tag: consumer.consumerTag };
 		} catch (err) {
 
-			console.log('PubSub Provision failed:', err);
+			console.log('Topic Provision failed:', err);
 		}
 	}
 
 	/**
   * 
   * @param {String|Array|Object} message the message to publish 
-  * @param {String} exchange the exchange to publish the message to.
-  *  
+  * @param {Object} options the options object
+  * @param {String} topic the topic to publish to
+  * @param {String} exchange the exchange to publish the message to, default (instance default exchange)
+  * 
   */
-	async publish(message, exchange) {
+	async publish(message, topic, exchange) {
 
 		try {
 
@@ -91,10 +105,10 @@ let PUBSUB = class PUBSUB extends _PatternBase2.default {
 			(0, _assert2.default)(exchange, 'Could not publish message - exchange could not be determined. Option "exchange": "<ExchangeName>"');
 
 			//assert the exchange.
-			channel.assertExchange(exchange, 'fanout', { durable: false });
+			channel.assertExchange(exchange, 'topic', { durable: false });
 
 			//publish a message
-			channel.publish(exchange, '', new Buffer(JSON.stringify(message)));
+			channel.publish(exchange, topic, new Buffer(JSON.stringify(message)));
 
 			return { success: true };
 		} catch (err) {
@@ -124,4 +138,4 @@ let PUBSUB = class PUBSUB extends _PatternBase2.default {
 	}
 
 };
-exports.default = PUBSUB;
+exports.default = Topic;

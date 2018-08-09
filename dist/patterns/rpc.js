@@ -91,14 +91,11 @@ let RPC = class RPC extends _PatternBase2.default {
     * 
     * @returns {Promise} {success:true} 
     */
-			async deprovision(args) {
+			async deprovision({ provision }) {
 
 						try {
 
-									args = args || {};
-									(0, _assert2.default)(args.provision, 'decorated-rabbit - rpc::provision was not argued a provision');
-
-									const { provision } = args;
+									(0, _assert2.default)(provision, 'decorated-rabbit - rpc::provision was not argued a provision');
 
 									await provision.channel.cancel(provision.tag);
 									await provision.channel.close();

@@ -53,10 +53,15 @@ export default class Topic extends PatternBase{
 			//set up the consumer
 			consumer = await channel.consume(queue.queue, async msg => {
 
-				let methodargs, response;
-				
+				let methodargs,
+					routingKeys,
+					response;
+
+
+				routingKeys = msg.fields.routingKey.split('.');
 				methodargs = this.decode(msg);
-				response = handler(methodargs);
+			
+				response = handler(methodargs, routingKeys);
 
 				//retain execution if the listener is asynchronous.
 				if(response instanceof Promise)
@@ -64,11 +69,12 @@ export default class Topic extends PatternBase{
 
 			}, {noAck: true});
 
+			console.log('Provisioned Topic::'+endpoint+ ' --- '+JSON.stringify(provision.options));
 			return {success:true, channel: channel, tag: consumer.consumerTag};
 
 		} catch( err ) {
 
-			console.log('PubSub Provision failed:', err);
+			console.log('Topic Provision failed:', err);
 		}
 
 	}

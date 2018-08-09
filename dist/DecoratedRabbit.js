@@ -31,6 +31,10 @@ var _fnf = require('./patterns/fnf');
 
 var _fnf2 = _interopRequireDefault(_fnf);
 
+var _topic = require('./patterns/topic');
+
+var _topic2 = _interopRequireDefault(_topic);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 let DecoratedRabbit = class DecoratedRabbit extends _events.EventEmitter {
@@ -93,6 +97,7 @@ let DecoratedRabbit = class DecoratedRabbit extends _events.EventEmitter {
 			this.rpc = new _rpc2.default(this);
 			this.pubsub = new _pubsub2.default(this);
 			this.fnf = new _fnf2.default(this);
+			this.topic = new _topic2.default(this);
 
 			let connected = await this.connect();
 

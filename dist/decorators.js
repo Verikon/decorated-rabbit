@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.fnf = exports.pubsub = exports.cte = exports.rpc = exports.withRabbit = undefined;
+exports.fnf = exports.topic = exports.pubsub = exports.cte = exports.rpc = exports.withRabbit = undefined;
 
 var _DecoratedRabbit = require('./DecoratedRabbit');
 
@@ -161,6 +161,13 @@ const cte = exports.cte = function (options) {
 	};
 };
 
+/**
+ * Decorate a function/method as a PubSub subscriber listener.
+ * 
+ * @param {Object} options the options object
+ * @param {String} options.instance the rabbit instance to bind to (ie. the rabbitMQ server), default : 'default' - the default instance.
+ * @param {String} options.exchange the exchange to attach pub/sub to, default: the instance default exchange. 
+ */
 const pubsub = exports.pubsub = function (options) {
 
 	options = options || {};
@@ -172,6 +179,38 @@ const pubsub = exports.pubsub = function (options) {
 
 		RabbitProvisions[instance].push({
 			type: 'pubsub',
+			endpoint: name,
+			handler: descriptor.value,
+			options: options,
+			channel: null,
+			provisioned: false
+		});
+
+		return descriptor.value;
+	};
+};
+
+/**
+ * Decorate a function/method as a Topic listener.
+ * 
+ * @param {Object} options the options object
+ * @param {String} options.instance the rabbit instance to bind to (ie. the rabbitMQ server), default : 'default' - the default instance.
+ * @param {String} options.exchange the exchange to attach this.subscriber/listener to, default: the instance default exchange. 
+ * @param {String} options.topic the topic pattern to attach this subscriber/listener to
+ * @param {String} options.subscribe exchange and topic in a single string ; eg {subscribe:'myExchange:mytopic.*}.
+ * @param {Boolean} options.durable exchange durability, default false.
+ */
+const topic = exports.topic = function (options) {
+
+	options = options || {};
+	options.instance = options.instance || 'default';
+
+	const { instance } = options;
+
+	return function (fn, name, descriptor) {
+
+		RabbitProvisions[instance].push({
+			type: 'topic',
 			endpoint: name,
 			handler: descriptor.value,
 			options: options,

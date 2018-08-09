@@ -39,6 +39,12 @@ Object.defineProperty(exports, 'fnf', {
     return _decorators.fnf;
   }
 });
+Object.defineProperty(exports, 'topic', {
+  enumerable: true,
+  get: function () {
+    return _decorators.topic;
+  }
+});
 Object.defineProperty(exports, 'withRabbit', {
   enumerable: true,
   get: function () {
