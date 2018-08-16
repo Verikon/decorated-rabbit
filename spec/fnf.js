@@ -104,6 +104,36 @@ describe('Topic Pattern Tests', function() {
 
 		});
 
+		describe('Pattern FnF binds the class context (this) properly',() => {
+
+			it('Invocation', () => {
+
+				return new Promise( async (res, rej) => {
+
+					const result = await Instance.fnf.invoke('fnf_test_3');
+					assert(_realObject(result), 'result was not an object');
+					assert(result.success === true, 'did not indicate success');
+
+					//give some time for the queue to respond (FnF doesnt acknowledge)
+					setTimeout(e => { res(); }, 1000);
+				});
+
+			});
+
+			it('Assertion', () => {
+
+				const file = path.resolve(__dirname, 'mocks', 'fnftest3.text');
+				const contents = fs.readFileSync(file, 'utf8');
+				assert(contents, 'WrappedRabbit');
+			});
+
+			it('Cleanup', () => {
+
+				let file = path.resolve(__dirname, 'mocks', 'fnftest3.text');
+				fs.unlinkSync(file); 
+			})
+
+		});
 
 	});
 

@@ -21,8 +21,7 @@ let PatternBase = class PatternBase {
 	encode(msg) {
 
 		try {
-
-			return new Buffer(JSON.stringify(msg));
+			return msg ? new Buffer(JSON.stringify(msg)) : new Buffer('');
 		} catch (err) {
 
 			this.handle_error('Patternbase', 'encode', err, 'Failed to encode to a message buffer. Are the arguments for your queue endpoint structured correctly?');
@@ -39,13 +38,12 @@ let PatternBase = class PatternBase {
   */
 	decode(msg) {
 
-		console.log('DDDDDDDDDDDDDDD', typeof msg);
 		try {
 
-			return JSON.parse(msg.content.toString());
+			return msg.content.toString().length ? JSON.parse(msg.content.toString()) : {};
 		} catch (err) {
 
-			this.handle_error('Patternbase', 'encode', err, 'Failed to encode to a message buffer. Are the arguments for your queue endpoint structured correctly?');
+			this.handle_error('Patternbase', 'decode', err, 'Failed to encode to a message buffer. Are the arguments for your queue endpoint structured correctly?');
 		}
 	}
 
@@ -105,7 +103,7 @@ let PatternBase = class PatternBase {
   * 
   * @param {String} messsage the message to log if server isnt being silent. 
   */
-	logToConsole(messsage, level) {
+	logToConsole(message, level) {
 
 		const { loglevel } = this.mq;
 		if (loglevel === 'silent' || level > loglevel) return;

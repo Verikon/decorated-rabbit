@@ -30,6 +30,9 @@ export default class FNF extends PatternBase {
 			//set the default provisioning options.
 			options = options || {};
 			options.durable = false;
+			
+			//apply the argued context
+			handler = context ? handler.bind(context) : handler;
 
 			let channel;
 

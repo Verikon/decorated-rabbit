@@ -93,7 +93,7 @@ let DecoratedRabbit = class DecoratedRabbit extends _events.EventEmitter {
 			this.endpoint = endpoint || this.endpoint;
 			this.exchange = exchange || this.exchange;
 
-			this.loglevel = args.loglevel.toString() || '1';
+			this.loglevel = args.loglevel === undefined ? '1' : args.loglevel.toString();
 
 			//add the patterns.
 			this.cte = new _cte2.default(this);

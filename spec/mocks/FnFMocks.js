@@ -12,7 +12,7 @@ export class FnFClass1 {
 	}
 
 	@fnf()
-	fnf_test_1( args ) {
+	fnf_test_1() {
 
 		fs.writeFileSync(path.resolve(__dirname, 'fnftest1.text'), 'test');
 	}
@@ -21,6 +21,12 @@ export class FnFClass1 {
 	fnf_test_2( args ) {
 
 		fs.writeFileSync(path.resolve(__dirname, 'fnftest2.json'), JSON.stringify(args,null,2));
+	}
+
+	@fnf()
+	fnf_test_3( args ) {
+
+		fs.writeFileSync(path.resolve(__dirname, 'fnftest3.text'), this.constructor.name);
 	}
 
 }

@@ -120,10 +120,10 @@ export default class RPC extends PatternBase {
 				inQueue = await channel.assertQueue('', {exclusive:true});
 
 				channel.consume(inQueue.queue, msg => {
-					resolve(JSON.parse(msg.content.toString()));
+					resolve(this.decode(msg));
 				}, {noAck:true});
 
-				channel.sendToQueue(queue, new Buffer(JSON.stringify(message)), {replyTo: inQueue.queue});
+				channel.sendToQueue(queue, this.encode(message), {replyTo: inQueue.queue});
 
 			} catch( err ) {
 
