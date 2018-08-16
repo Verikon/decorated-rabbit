@@ -39,6 +39,7 @@ let PatternBase = class PatternBase {
   */
 	decode(msg) {
 
+		console.log('DDDDDDDDDDDDDDD', typeof msg);
 		try {
 
 			return JSON.parse(msg.content.toString());
@@ -104,7 +105,10 @@ let PatternBase = class PatternBase {
   * 
   * @param {String} messsage the message to log if server isnt being silent. 
   */
-	logToConsole(messsage) {
+	logToConsole(messsage, level) {
+
+		const { loglevel } = this.mq;
+		if (loglevel === 'silent' || level > loglevel) return;
 
 		console.log(message);
 	}

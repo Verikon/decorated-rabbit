@@ -15,13 +15,14 @@ let RabbitProvisions = {
  * @param {Object} args the argument object.
  * @param {String} args.attr the attribute to apply the DecoratedRabbit instance with upon the decorated class
  * @param {String} args.instance whilst we provide a default singleton, you can run multiple instances and refer to them by name, the name set by this vairable (default is 'default' - the default singleton)
+ * @param {String} args.loglevel logging detail, 'silent' or a number between 1 and 5 where 5 is the maximium amount of verbosity.
  * @param {*} args.context the default context to bind listeners to, you should never need to change this; default the class being decorated.
  */
 export const withRabbit = function( args ) {
 
 	args = args || {};
 
-	let {instance, attr, initialize, endpoint, exchange, context} = args;
+	let {instance, attr, initialize, endpoint, exchange, context, loglevel} = args;
 
 	//default initialization true.
 	initialize = initialize === undefined ? true : initialize;
@@ -32,8 +33,13 @@ export const withRabbit = function( args ) {
 	//default the attribute to 'mq'
 	attr = attr === undefined ? 'mq' : attr;
 
+	//default the loglevel to 1
+	args.loglevel = args.loglevel || '1';
+	args.loglevel = args.loglevel.toString();
+
 	return function( target ) {
 
+		//build a random id for this instance.
 		let id = crypto.randomBytes(16).toString("hex");
 
 		class WrappedRabbit extends target {
@@ -56,7 +62,8 @@ export const withRabbit = function( args ) {
 					RabbitInstances[instance] =  {
 						inst: new DecoratedRabbit(provisioned_args),
 						ids: [id]
-					}
+					};
+
 				} else {
 					RabbitInstances[instance].ids.push(id);
 				}

@@ -79,6 +79,7 @@ let DecoratedRabbit = class DecoratedRabbit extends _events.EventEmitter {
   * @param {Object} args the argument object
   * @param {String} args.endpoint the endpoint to connect to, default ()
   * @param {String} args.exchange the exchange to construct with
+  * @param {String} args.loglevel logging detail, 'silent' or a number between 1 and 5 where 5 is the maximium amount of verbosity.
   * @param {*} args.context the default context to bind all listeners to.
   */
 	async initialize(args) {
@@ -91,6 +92,8 @@ let DecoratedRabbit = class DecoratedRabbit extends _events.EventEmitter {
 
 			this.endpoint = endpoint || this.endpoint;
 			this.exchange = exchange || this.exchange;
+
+			this.loglevel = args.loglevel.toString() || '1';
 
 			//add the patterns.
 			this.cte = new _cte2.default(this);
@@ -112,6 +115,25 @@ let DecoratedRabbit = class DecoratedRabbit extends _events.EventEmitter {
 		} catch (err) {
 
 			this.handleError('initialize', err, true);
+		}
+	}
+
+	/**
+  * Finish up, garbage collect, end it all.
+  */
+	async close() {
+
+		try {
+
+			let result;
+
+			//disconnect
+			result = await this.disconnect();
+
+			return { success: true };
+		} catch (err) {
+
+			return this.handleError('close', err);
 		}
 	}
 

@@ -63,7 +63,7 @@ let FNF = class FNF extends _PatternBase2.default {
 				handler(methodargs);
 			}, { noAck: true });
 
-			console.log('Provisioned FNF::' + endpoint + ' --- ' + JSON.stringify(options));
+			this.logToConsole('Provisioned FNF::' + endpoint + ' --- ' + JSON.stringify(options), 1);
 			return { success: true, channel: channel, tag: cons.consumerTag };
 		} catch (err) {
 
@@ -85,7 +85,7 @@ let FNF = class FNF extends _PatternBase2.default {
 
 			provision.provisioned = false;
 
-			console.log('Deprovisioned FNF::' + provision.endpoint);
+			this.logToConsole('Deprovisioned FNF::' + provision.endpoint, 1);
 			return { success: true };
 		} catch (err) {
 

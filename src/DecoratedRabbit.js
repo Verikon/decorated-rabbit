@@ -52,6 +52,7 @@ export default class DecoratedRabbit extends EventEmitter{
 	 * @param {Object} args the argument object
 	 * @param {String} args.endpoint the endpoint to connect to, default ()
 	 * @param {String} args.exchange the exchange to construct with
+	 * @param {String} args.loglevel logging detail, 'silent' or a number between 1 and 5 where 5 is the maximium amount of verbosity.
 	 * @param {*} args.context the default context to bind all listeners to.
 	 */ 
 	async initialize( args ) {
@@ -64,6 +65,8 @@ export default class DecoratedRabbit extends EventEmitter{
 
 			this.endpoint = endpoint || this.endpoint;
 			this.exchange = exchange || this.exchange;
+
+			this.loglevel = args.loglevel === undefined ? '1' : args.loglevel.toString();
 
 			//add the patterns.
 			this.cte = new CTE(this);
@@ -88,6 +91,26 @@ export default class DecoratedRabbit extends EventEmitter{
 			this.handleError('initialize', err, true);
 		}
 
+	}
+
+	/**
+	 * Finish up, garbage collect, end it all.
+	 */
+	async close() {
+
+		try {
+
+			let result;
+
+			//disconnect
+			result = await this.disconnect();
+
+			return {success: true};
+
+		} catch( err ) {
+
+			return this.handleError('close', err);
+		}
 	}
 
 	/**
@@ -136,7 +159,7 @@ export default class DecoratedRabbit extends EventEmitter{
 			if(!this.state.initialized) return {success:true};
 
 			//deprovision all listeners
-			await Promise.all( this.provisions.map(prov => {
+			await Promise.all(this.provisions.map(prov => {
 				return this[prov.type].deprovision({provision: prov});
 			}));
 

@@ -2,7 +2,7 @@ import {assert} from 'chai';
 import fs from 'fs';
 import path from 'path';
 
-import DecoratedRabbit, {withRabbit, rpc, cte, pubsub, fnf} from '../src';
+import DecoratedRabbit, {withRabbit, rpc, cte, pubsub, fnf, topic} from '../src';
 import config from './config';
 
 import {
@@ -49,6 +49,11 @@ describe('decorated-rabbit tests', function() {
 			it('fnf is a function', () => {
 
 				assert(typeof fnf === 'function', 'failed.');
+			});
+
+			it('topic is a function', () => {
+
+				assert(typeof topic === 'function', 'failed.');
 			});
 
 		});
@@ -381,8 +386,6 @@ describe('decorated-rabbit tests', function() {
 						})
 				});
 
-
-
 			});
 
 			describe('Cleanup', () => {
@@ -712,7 +715,6 @@ describe('decorated-rabbit tests', function() {
 					});
 
 				});
-
 
 			});
 
