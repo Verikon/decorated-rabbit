@@ -45,6 +45,9 @@ let FNF = class FNF extends _PatternBase2.default {
 			options = options || {};
 			options.durable = false;
 
+			//apply the argued context
+			handler = context ? handler.bind(context) : handler;
+
 			let channel;
 
 			//set up the endpoint/listener queue name.
