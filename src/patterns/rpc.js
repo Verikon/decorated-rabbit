@@ -127,7 +127,7 @@ export default class RPC extends PatternBase {
 
 			} catch( err ) {
 
-				console.log('ERrored....', err);
+				console.log('decorated rabbit:rpc invoke failed', err);
 			}
 
 		});

@@ -137,7 +137,7 @@ let RPC = class RPC extends _PatternBase2.default {
 												channel.sendToQueue(queue, this.encode(message), { replyTo: inQueue.queue });
 									} catch (err) {
 
-												console.log('ERrored....', err);
+												console.log('decorated rabbit:rpc invoke failed', err);
 									}
 						});
 			}
