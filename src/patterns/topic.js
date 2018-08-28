@@ -87,9 +87,11 @@ export default class Topic extends PatternBase{
 	 * @param {String} exchange the exchange to publish the message to, default (instance default exchange)
 	 * 
 	 */
-	async publish( message, topic, exchange ) {
+	async publish( message, topic, exchange, options ) {
 
 		try {
+
+			options = options || {};
 
 			//gain a channel.
 			const channel = await this.mq.connection.createChannel();
@@ -101,14 +103,19 @@ export default class Topic extends PatternBase{
 			//assert the exchange.
 			channel.assertExchange(exchange, 'topic', {durable: false});
 
-			//publish a message
-			channel.publish(exchange, topic, new Buffer(JSON.stringify(message)));
+			if(options.log) {
+				console.log('Publishing to '+topic+' on exchange '+exchange+':');
+				console.log('`'+JSON.stringify(message, null, 2)+'`');
+			}
 
+			//publish a message
+			const result = await channel.publish(exchange, topic, new Buffer(JSON.stringify(message)));
+			assert(result === true, 'Topic failed to publish to channel');
 			return {success: true};
 
 		} catch( err ) {
 
-			console.log('PubSub publish failed:', err);
+			console.log('Topic publish failed:', err);
 			return {success: false, error: err};
 		}
 
