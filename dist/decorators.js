@@ -26,16 +26,18 @@ let RabbitProvisions = {
   * DecoratedRabbit main decorator.
   * 
   * @param {Object} args the argument object.
-  * @param {String} args.attr the attribute to apply the DecoratedRabbit instance with upon the decorated class
+  * @param {String} args.attr the attribute to apply the DecoratedRabbit instance with upon the decorated class, default 'mq'.
   * @param {String} args.instance whilst we provide a default singleton, you can run multiple instances and refer to them by name, the name set by this vairable (default is 'default' - the default singleton)
   * @param {String} args.loglevel logging detail, 'silent' or a number between 1 and 5 where 5 is the maximium amount of verbosity.
+  * @param {String} args.onReady the class method (AS A STRING) to invoke upon connection (eg. 'onRabbitReady' - will invoke the method onRabbitReady in your class)
+  * @param {String} args.onError the name(string) of a class method to invoke upon connection error (eg. 'onRabbitErrored' - will invoke the method onRabbitErrored in your class)
   * @param {*} args.context the default context to bind listeners to, you should never need to change this; default the class being decorated.
   */
 };const withRabbit = exports.withRabbit = function (args) {
 
 	args = args || {};
 
-	let { instance, attr, initialize, endpoint, exchange, context, loglevel } = args;
+	let { instance, attr, initialize, onReady, endpoint, exchange, context, loglevel } = args;
 
 	//default initialization true.
 	initialize = initialize === undefined ? true : initialize;
@@ -81,8 +83,13 @@ let RabbitProvisions = {
 				}
 
 				this[attr] = RabbitInstances[instance].inst;
+				if (args.onConnect) {}
+
+				//attach a once listener for the onReady method.
+				if (onReady) this[attr].once('connected', this[onReady].bind(this));
 
 				if (initialize) {
+
 					this[attr].initialize(args);
 				}
 			}
@@ -125,6 +132,13 @@ let RabbitProvisions = {
 	};
 };
 
+/**
+ * Decorate a function/method as a RPC listener.
+ * 
+ * @param {Object} options the options object
+ * @param {String} options.instance the rabbit instance to bind to (ie. the rabbitMQ server), default : 'default' - the default instance.
+ * @param {String} options.exchange the exchange to attach pub/sub to, default: the instance default exchange. 
+ */
 const rpc = exports.rpc = function (options) {
 
 	options = options || {};
