@@ -25,7 +25,7 @@ import {Client as MQClient} from 'decorated-rabbit';
 let result, client = MQClient();
 client.connect({uri: 'amqp://someserver:<PORT>'})
 	.then(_=> {
-		result = await client.rpc.invoke('some_message',{a:1, b:2});
+		result = await client.message().rpc.invoke('some_message',{a:1, b:2});
 	});
 ```
 
