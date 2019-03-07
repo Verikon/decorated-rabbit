@@ -22,23 +22,11 @@ It is the project goal to supply implementations for all of the RabbitMQ pattern
 ```
 import {Client as MQClient} from 'decorated-rabbit';
 
-let client;
-
-async setup() {
-
-    try {
-        client = MQClient();
-        await client.connect({uri: 'amqp://someserver:<PORT>'}); 
-    } catch( err ) {
-        console.error('RabbitMQ failed to connect', err);
-    }
-}
-
-async listener() {
-
-    const result = await client.rpc.invoke('some_message',{a:1, b:2});
-
-}
+let result, client = MQClient();
+client.connect({uri: 'amqp://someserver:<PORT>'})
+	.then(_=> {
+		result = await client.rpc.invoke('some_message',{a:1, b:2});
+	});
 ```
 
 ## Default service usage as a decorated class
