@@ -1,7 +1,8 @@
 {
 	"name": "decorated-rabbit",
-	"version": "0.1.15",
-	"main": "dist/index.js",
+	"version": "0.1.16",
+	"main": "./dist/index.js",
+	"types": "./src/index.d.ts",
 	"repository": "git@github.com:Verikon/decorated-rabbit.git",
 	"author": "Bren Norris <bren@launchboard.com>",
 	"license": "MIT",

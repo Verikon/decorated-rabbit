@@ -37,7 +37,16 @@ let RabbitProvisions = {
 
 	args = args || {};
 
-	let { instance, attr, initialize, onReady, endpoint, exchange, context, loglevel } = args;
+	let {
+		instance,
+		attr,
+		initialize,
+		onReady,
+		endpoint,
+		exchange,
+		context,
+		loglevel
+	} = args;
 
 	//default initialization true.
 	initialize = initialize === undefined ? true : initialize;
@@ -86,7 +95,10 @@ let RabbitProvisions = {
 				if (args.onConnect) {}
 
 				//attach a once listener for the onReady method.
-				if (onReady) this[attr].once('connected', this[onReady].bind(this));
+				if (onReady) {
+
+					this[attr].once('connected', this[onReady].bind(this));
+				}
 
 				if (initialize) {
 

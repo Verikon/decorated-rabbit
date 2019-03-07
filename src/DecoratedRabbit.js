@@ -77,7 +77,7 @@ export default class DecoratedRabbit extends EventEmitter{
 
 			let connected = await this.connect();
 
-			assert(connected.success, 'Initialization failed');
+			assert(connected.success, 'Could not connect to MQ ('+this.endpoint+')');
 
 			this.state.initialized = true;
 

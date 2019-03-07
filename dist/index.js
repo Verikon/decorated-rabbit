@@ -13,6 +13,15 @@ Object.defineProperty(exports, 'default', {
   }
 });
 
+var _Client = require('./Client');
+
+Object.defineProperty(exports, 'Client', {
+  enumerable: true,
+  get: function () {
+    return _Client.Client;
+  }
+});
+
 var _decorators = require('./decorators');
 
 Object.defineProperty(exports, 'rpc', {

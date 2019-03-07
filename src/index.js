@@ -1,4 +1,5 @@
 export {default as default} from './DecoratedRabbit';
+export {Client as Client} from './Client';
 export {rpc as rpc} from './decorators';
 export {cte as cte} from './decorators';
 export {pubsub as pubsub} from './decorators';

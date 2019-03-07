@@ -18,6 +18,29 @@ Supported message-queue patterns:
 
 It is the project goal to supply implementations for all of the RabbitMQ patterns (see https://www.rabbitmq.com/getstarted.html) but more.
 
+## As a simple MQ client
+```
+import {Client as MQClient} from 'decorated-rabbit';
+
+let client;
+
+async setup() {
+
+    try {
+        client = MQClient();
+        await client.connect({uri: 'amqp://someserver:<PORT>'}); 
+    } catch( err ) {
+        console.error('RabbitMQ failed to connect', err);
+    }
+}
+
+async listener() {
+
+    const result = await client.rpc.invoke('some_message',{a:1, b:2});
+
+}
+```
+
 ## Default service usage as a decorated class
 ```
 import {withRabbit, rpc} from 'decorated-rabbit'
@@ -66,7 +89,7 @@ class MyClass {
 
 ## Attaching an RPC listener which will respond to the RPC queue "my_rpc_queue"
 ```
-import DecoratedRabbit from 'decorated-rabbit';
+import {withRabbit} from 'decorated-rabbit';
 
 @withRabbit({endpoint: 'amqp://<user>:<pass>@your_rabbit_mq:<port>', exchange: 'yourexchange'})
 class MyClass {
@@ -81,7 +104,7 @@ class MyClass {
 ## Attaching a topic listener to the topic exchange myExchange for topic my_topic.*
 ### invoked from the client class as `response = await this.mq.topic.publish('my message', 'myExchange', 'my_topic.*');
 ```
-import DecoratedRabbit from 'decorated-rabbit';
+import {withRabbit} from 'decorated-rabbit';
 
 @withRabbit({endpoint: 'amqp://<user>:<pass>@your_rabbit_mq:<port>', exchange: 'yourexchange'})
 class MyClass {
@@ -96,7 +119,7 @@ class MyClass {
 
 ## Attaching an Fire and Forget listener on queue my_fnf
 ```
-import DecoratedRabbit from 'decorated-rabbit';
+import {withRabbit} from 'decorated-rabbit';
 
 @withRabbit({endpoint: 'amqp://<user>:<pass>@your_rabbit_mq:<port>', exchange: 'yourexchange'})
 class MyClass {
@@ -110,7 +133,7 @@ class MyClass {
 
 ## Attaching an Worker listener for queue work_hard
 ```
-import DecoratedRabbit from 'decorated-rabbit';
+import {withRabbit} from 'decorated-rabbit';
 
 @withRabbit({endpoint: 'amqp://<user>:<pass>@your_rabbit_mq:<port>', exchange: 'yourexchange'})
 class MyClass {
