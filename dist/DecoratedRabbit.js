@@ -9,7 +9,11 @@ var _events = require('events');
 
 var _isPortReachable = require('is-port-reachable');
 
-var isPortReachable = _interopRequireWildcard(_isPortReachable);
+var _isPortReachable2 = _interopRequireDefault(_isPortReachable);
+
+var _urlParse = require('url-parse');
+
+var _urlParse2 = _interopRequireDefault(_urlParse);
 
 var _assert = require('assert');
 
@@ -40,8 +44,6 @@ var _topic = require('./patterns/topic');
 var _topic2 = _interopRequireDefault(_topic);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 let DecoratedRabbit = class DecoratedRabbit extends _events.EventEmitter {
 
@@ -108,8 +110,7 @@ let DecoratedRabbit = class DecoratedRabbit extends _events.EventEmitter {
 									this.fnf = new _fnf2.default(this);
 									this.topic = new _topic2.default(this);
 
-									console.log("\n\n___THIS IS IT");
-									console.log(endpoint);
+									await this.awaitService(endpoint);
 
 									let connected = await this.connect();
 
@@ -263,6 +264,49 @@ let DecoratedRabbit = class DecoratedRabbit extends _events.EventEmitter {
 						}
 
 						return { success: false, message: 'Method ' + method + ' failed.', error: error };
+			}
+
+			awaitService(endpoint, props = {}) {
+
+						return new Promise(async (resolve, reject) => {
+
+									const { hostname, port } = (0, _urlParse2.default)(endpoint, true);
+
+									const initialAttempt = await (0, _isPortReachable2.default)(port, { host: hostname });
+									if (initialAttempt) return resolve(true);
+
+									const retries = props.retries || 25;
+									let retry = 0;
+
+									const timer = setInterval(async _ => {
+
+												const reply = await (0, _isPortReachable2.default)(port, { host: hostname });
+
+												if (reply) {
+
+															clearInterval(timer);
+															console.log(`MQ is spinning up, waiting 20 seconds for it to be accessible.`);
+															await new Promise(r => setTimeout(_ => r(), 20000)); //wait 5 seconds for the service to be ready.
+															resolve(true);
+												} else {
+
+															console.log(`Awaiting MQ on ${hostname}:${port}.... attempt (${retry}/${retries})`);
+															retry++;
+
+															if (retry === retries) {
+																		console.log(`MQ ${hostname}:${port} unreachable after ${retries} attempts.`);
+																		reject(`Failed to reach MQ ${hostname}:${port}`);
+															}
+												}
+									}, 3000);
+						});
+
+						const timer = setTimeout(async _ => {
+									const reply = await (0, _isPortReachable2.default)(port, { host: hostname });
+									if (reply) {
+												clearTimeout;
+									}
+						}, 3000);
 			}
 };
 exports.default = DecoratedRabbit;

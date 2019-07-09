@@ -1,5 +1,6 @@
 import {EventEmitter} from 'events';
-import * as isPortReachable from 'is-port-reachable';
+import isPortReachable from 'is-port-reachable';
+import parseURL from 'url-parse';
 
 import assert from 'assert';
 import AMQP from 'amqplib';
@@ -76,8 +77,7 @@ export default class DecoratedRabbit extends EventEmitter{
 			this.fnf = new FNF(this);
 			this.topic = new Topic(this);
 
-			console.log("\n\n___THIS IS IT");
-			console.log(endpoint);
+			await this.awaitService(endpoint);
 
 			let connected = await this.connect();
 
@@ -228,6 +228,7 @@ export default class DecoratedRabbit extends EventEmitter{
 		return {success: true};
 	}
 
+
 	/**
 	 * Error handler.
 	 * 
@@ -243,6 +244,56 @@ export default class DecoratedRabbit extends EventEmitter{
 		}
 
 		return {success:false, message: 'Method '+method+' failed.', error: error };
+	}
+
+	awaitService( endpoint, props={} ) {
+
+
+		return new Promise( async (resolve, reject) => {
+
+			const {hostname, port} = parseURL(endpoint, true);
+
+			const initialAttempt = await isPortReachable(port, {host:hostname});
+			if(initialAttempt) return resolve(true);
+
+			const retries = props.retries || 25;
+			let retry = 0;
+
+			const timer = setInterval( async _ => {
+
+				const reply = await isPortReachable(port, {host:hostname});
+
+				if(reply) {
+
+					clearInterval(timer);
+					console.log(`MQ is spinning up, waiting 20 seconds for it to be accessible.`);
+					await new Promise(r=> setTimeout(_=>r(), 20000)); //wait 5 seconds for the service to be ready.
+					resolve(true);
+				} else {
+
+					console.log(`Awaiting MQ on ${hostname}:${port}.... attempt (${retry}/${retries})`);
+					retry++;
+
+					if(retry === retries) {
+						console.log(`MQ ${hostname}:${port} unreachable after ${retries} attempts.`);
+						reject(`Failed to reach MQ ${hostname}:${port}`);
+					}
+				}
+
+			}, 3000);
+
+		});
+
+		
+
+		const timer = setTimeout( async _ => {
+			const reply = await isPortReachable(port, {host:hostname});
+			if(reply) {
+				clearTimeout
+			}
+
+		}, 3000)
+
 	}
 }
 
