@@ -20,6 +20,7 @@
 	},
 	"dependencies": {
 		"co": "^4.6.0",
-		"amqplib": "^0.5.2"
+		"amqplib": "^0.5.2",
+		"is-port-reachable": "^2.0.1"
 	}
 }

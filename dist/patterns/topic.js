@@ -22,13 +22,26 @@ let Topic = class Topic extends _PatternBase2.default {
 		super(main);
 	}
 
+	/**
+  * Provision a topic listener
+  * 
+  * @param {Object} - the argument object
+  * @param {Object} provision
+  * @param {String} provision.endpoint the topic name
+  * @param {Function} provision.handler the listener function
+  * @param {Object} provision.options an options object
+  * @param {String} provision.options.topic the name of the topic, same as endpoitn 
+  */
 	async provision({ provision, context }) {
 
 		try {
 
 			let queue, consumer, channel;
 
-			let { endpoint, handler } = provision;
+			let {
+				endpoint,
+				handler
+			} = provision;
 
 			//extract the options, setting defaults.
 			let { durable, exclusive } = provision.options;
@@ -69,8 +82,7 @@ let Topic = class Topic extends _PatternBase2.default {
 				let methodargs, routingKeys, response;
 
 				routingKeys = msg.fields.routingKey.split('.');
-				methodargs = this.decode(msg);
-
+				methodargs = !!msg && msg.constructor === Object ? this.decode(msg) : msg;
 				response = handler(methodargs, routingKeys);
 
 				//retain execution if the listener is asynchronous.

@@ -1,4 +1,5 @@
 import {EventEmitter} from 'events';
+import * as isPortReachable from 'is-port-reachable';
 
 import assert from 'assert';
 import AMQP from 'amqplib';
@@ -74,6 +75,9 @@ export default class DecoratedRabbit extends EventEmitter{
 			this.pubsub = new PUBSUB(this);
 			this.fnf = new FNF(this);
 			this.topic = new Topic(this);
+
+			console.log("\n\n___THIS IS IT");
+			console.log(endpoint);
 
 			let connected = await this.connect();
 

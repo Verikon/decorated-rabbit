@@ -20,7 +20,7 @@ let Client = exports.Client = class Client {
     async connect({ uri, exchange }) {
 
         this.mq = new _DecoratedRabbit2.default({ endpoint: uri, exchange });
-        const connected = await this.mq.initialize();
+        return await this.mq.initialize();
     }
 
     message() {
