@@ -13,27 +13,26 @@ var _crypto = require('crypto');
 
 var _crypto2 = _interopRequireDefault(_crypto);
 
+var _variables = require('./variables');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 let RabbitInstances = {
 	default: null
 };
 
-let RabbitProvisions = {
-	default: []
-
-	/**
-  * DecoratedRabbit main decorator.
-  * 
-  * @param {Object} args the argument object.
-  * @param {String} args.attr the attribute to apply the DecoratedRabbit instance with upon the decorated class, default 'mq'.
-  * @param {String} args.instance whilst we provide a default singleton, you can run multiple instances and refer to them by name, the name set by this vairable (default is 'default' - the default singleton)
-  * @param {String} args.loglevel logging detail, 'silent' or a number between 1 and 5 where 5 is the maximium amount of verbosity.
-  * @param {String} args.onReady the class method (AS A STRING) to invoke upon connection (eg. 'onRabbitReady' - will invoke the method onRabbitReady in your class)
-  * @param {String} args.onError the name(string) of a class method to invoke upon connection error (eg. 'onRabbitErrored' - will invoke the method onRabbitErrored in your class)
-  * @param {*} args.context the default context to bind listeners to, you should never need to change this; default the class being decorated.
-  */
-};const withRabbit = exports.withRabbit = function (args) {
+/**
+ * DecoratedRabbit main decorator.
+ * 
+ * @param {Object} args the argument object.
+ * @param {String} args.attr the attribute to apply the DecoratedRabbit instance with upon the decorated class, default 'mq'.
+ * @param {String} args.instance whilst we provide a default singleton, you can run multiple instances and refer to them by name, the name set by this vairable (default is 'default' - the default singleton)
+ * @param {String} args.loglevel logging detail, 'silent' or a number between 1 and 5 where 5 is the maximium amount of verbosity.
+ * @param {String} args.onReady the class method (AS A STRING) to invoke upon connection (eg. 'onRabbitReady' - will invoke the method onRabbitReady in your class)
+ * @param {String} args.onError the name(string) of a class method to invoke upon connection error (eg. 'onRabbitErrored' - will invoke the method onRabbitErrored in your class)
+ * @param {*} args.context the default context to bind listeners to, you should never need to change this; default the class being decorated.
+ */
+const withRabbit = exports.withRabbit = function (args) {
 
 	args = args || {};
 
@@ -72,7 +71,7 @@ let RabbitProvisions = {
 
 				super(cargs);
 
-				let classProvisions = RabbitProvisions[instance].filter(prov => {
+				let classProvisions = _variables.provisions[instance].filter(prov => {
 					return target.prototype[prov.endpoint] === prov.handler;
 				});
 
@@ -160,7 +159,7 @@ const rpc = exports.rpc = function (options) {
 
 	return function (fn, name, descriptor) {
 
-		RabbitProvisions[instance].push({
+		_variables.provisions[instance].push({
 			type: 'rpc',
 			endpoint: name,
 			handler: descriptor.value,
@@ -209,7 +208,7 @@ const pubsub = exports.pubsub = function (options) {
 
 	return function (fn, name, descriptor) {
 
-		RabbitProvisions[instance].push({
+		_variables.provisions[instance].push({
 			type: 'pubsub',
 			endpoint: name,
 			handler: descriptor.value,
@@ -241,7 +240,7 @@ const topic = exports.topic = function (options) {
 
 	return function (fn, name, descriptor) {
 
-		RabbitProvisions[instance].push({
+		_variables.provisions[instance].push({
 			type: 'topic',
 			endpoint: name,
 			handler: descriptor.value,
@@ -263,7 +262,7 @@ const fnf = exports.fnf = function (options) {
 
 	return function (fn, name, descriptor) {
 
-		RabbitProvisions[instance].push({
+		_variables.provisions[instance].push({
 			type: 'fnf',
 			endpoint: name,
 			handler: descriptor.value,

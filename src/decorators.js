@@ -5,9 +5,7 @@ let RabbitInstances = {
 	default: null
 };
 
-let RabbitProvisions = {
-	default: []
-}
+import {provisions as globalProvs} from './variables';
 
 /**
  * DecoratedRabbit main decorator.
@@ -48,7 +46,6 @@ export const withRabbit = function( args ) {
 	args.loglevel = args.loglevel || '1';
 	args.loglevel = args.loglevel.toString();
 
-
 	return function( target ) {
 
 		//build a random id for this instance.
@@ -60,7 +57,7 @@ export const withRabbit = function( args ) {
 
 				super(cargs);
 
-				let classProvisions = RabbitProvisions[instance].filter(prov => {
+				let classProvisions = globalProvs[instance].filter(prov => {
 					return target.prototype[prov.endpoint] === prov.handler;
 				});
 
@@ -150,7 +147,7 @@ export const rpc = function( options ) {
 
 	return function( fn, name, descriptor ) {
 
-		RabbitProvisions[instance].push({
+		globalProvs[instance].push({
 			type: 'rpc',
 			endpoint: name,
 			handler: descriptor.value,
@@ -200,7 +197,7 @@ export const pubsub = function( options ) {
 
 	return function( fn, name, descriptor ) {
 
-		RabbitProvisions[instance].push({
+		globalProvs[instance].push({
 			type: 'pubsub',
 			endpoint: name,
 			handler: descriptor.value,
@@ -234,7 +231,7 @@ export const topic = function( options ) {
 
 	return function( fn, name, descriptor ) {
 
-		RabbitProvisions[instance].push({
+		globalProvs[instance].push({
 			type: 'topic',
 			endpoint: name,
 			handler: descriptor.value,
@@ -258,7 +255,7 @@ export const fnf = function( options ) {
 
 	return function( fn, name, descriptor ) {
 
-		RabbitProvisions[instance].push({
+		globalProvs[instance].push({
 			type: 'fnf',
 			endpoint: name,
 			handler: descriptor.value,

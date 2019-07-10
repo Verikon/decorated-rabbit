@@ -11,6 +11,8 @@ import PUBSUB from './patterns/pubsub';
 import FNF from './patterns/fnf';
 import Topic from './patterns/topic';
 
+import {provisions as globalProvs} from './variables';
+
 export default class DecoratedRabbit extends EventEmitter{
 
 	/**
@@ -31,8 +33,9 @@ export default class DecoratedRabbit extends EventEmitter{
 
 		const {provisions, exchange, endpoint, prefix_exchange, context} = props;
 
+
 		this.connection = null;
-		this.provisions = provisions || [];
+		this.provisions = globalProvs.default || []; //provisions || [];
 		this.endpoint = endpoint || null;
 		this.exchange = exchange || null;
 		this.defaultContext = context || null;
@@ -77,8 +80,7 @@ export default class DecoratedRabbit extends EventEmitter{
 			this.fnf = new FNF(this);
 			this.topic = new Topic(this);
 
-			await this.awaitService(endpoint);
-
+			await this.awaitService(this.endpoint);
 			let connected = await this.connect();
 
 			assert(connected.success, 'Could not connect to MQ ('+this.endpoint+')');
@@ -252,6 +254,9 @@ export default class DecoratedRabbit extends EventEmitter{
 		return new Promise( async (resolve, reject) => {
 
 			const {hostname, port} = parseURL(endpoint, true);
+
+			if(!hostname || !port)
+				throw new error('Could not resovlve hostname and port from `'+ endpoint+'`');
 
 			const initialAttempt = await isPortReachable(port, {host:hostname});
 			if(initialAttempt) return resolve(true);
