@@ -175,7 +175,7 @@ let DecoratedRabbit = class DecoratedRabbit extends _events.EventEmitter {
 			this.connection = await _amqplib2.default.connect(endpoint);
 			this.state.connected = true;
 
-			if (this.provisions && this.provisions.length && !props.noProvision) await this.provision();
+			if (this.provisions && this.provisions.length && props.noProvision !== true) await this.provision();
 
 			this.emit('connected');
 
