@@ -23,7 +23,7 @@ export default class DecoratedRabbit extends EventEmitter{
 	 * @param {String} props.endpoint the endpoint for this decorated rabbit instance.
 	 * @param {String} props.exchange a default exchange for this decorated rabbit instance.
 	 * @param {Boolean} props.prefix_exchange add the exchange to all listeners as a prefix, eg 'myproject.<methodname>' instead of just '<methodname>' on the queue.
- 	 * 
+ 	 * @param {*} props.context a default context to run listeners in.
 	 * @returns {DecoratedRabbit}
 	 */
 	constructor( props ) {
@@ -32,7 +32,6 @@ export default class DecoratedRabbit extends EventEmitter{
 		super(props);
 
 		const {provisions, exchange, endpoint, prefix_exchange, context} = props;
-
 
 		this.connection = null;
 		this.provisions = globalProvs.default || []; //provisions || [];
