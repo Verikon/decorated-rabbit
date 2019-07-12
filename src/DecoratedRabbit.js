@@ -52,6 +52,16 @@ export default class DecoratedRabbit extends EventEmitter{
 	}
 
 	/**
+	 * This is exactly the same as this.initialize with the single difference being it will not provision listeners. This is used by the Client class.
+	 * 
+	 * @param {*} args @see this.initialize args
+	 */
+	async start( args={} ) {
+
+		args.noProvision = !args.provision;
+		return await this.initialize(args);
+	}
+	/**
 	 * Initialize the instance.
 	 * 
 	 * @param {Object} args the argument object
@@ -59,14 +69,15 @@ export default class DecoratedRabbit extends EventEmitter{
 	 * @param {String} args.exchange the exchange to construct with
 	 * @param {String} args.loglevel logging detail, 'silent' or a number between 1 and 5 where 5 is the maximium amount of verbosity.
 	 * @param {*} args.context the default context to bind all listeners to.
+	 * @param {boolean} args.provision called by this.start to prevent provisioning listeners as the start method is used over initialize so the instance is more of a client, not a server.
 	 */ 
 	async initialize( args ) {
 
 		try {
 
 			args = args || {};
-
-			let {endpoint, exchange} = args;
+			
+			let {endpoint, exchange, noProvision} = args;
 
 			this.endpoint = endpoint || this.endpoint;
 			this.exchange = exchange || this.exchange;
@@ -81,7 +92,7 @@ export default class DecoratedRabbit extends EventEmitter{
 			this.topic = new Topic(this);
 
 			await this.awaitService(this.endpoint);
-			let connected = await this.connect();
+			let connected = await this.connect({noProvision});
 
 			assert(connected.success, 'Could not connect to MQ ('+this.endpoint+')');
 
@@ -124,7 +135,7 @@ export default class DecoratedRabbit extends EventEmitter{
 	 * 
 	 * @returns {Promise} resolves with {success: true, message: <string>} 
 	 */
-	async connect() {
+	async connect( props={} ) {
 
 		let {endpoint} = this;
 
@@ -135,7 +146,7 @@ export default class DecoratedRabbit extends EventEmitter{
 			this.connection = await AMQP.connect(endpoint);
 			this.state.connected = true;
 
-			if(this.provisions && this.provisions.length)
+			if(this.provisions && this.provisions.length && !props.noProvision)
 				await this.provision();
 
 			this.emit('connected');
