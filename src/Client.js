@@ -17,6 +17,11 @@ export class Client {
         return await this.mq.start({provision});
     }
 
+    async disconnect() {
+
+        return await this.mq.close();
+    }
+
     message() {
 
         return this.mq;

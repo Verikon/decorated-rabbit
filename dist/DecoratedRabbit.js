@@ -67,7 +67,6 @@ let DecoratedRabbit = class DecoratedRabbit extends _events.EventEmitter {
 
 		const { provisions, exchange, endpoint, prefix_exchange, context } = props;
 
-		console.log('\n\n\n', props.context, '\n\n\n');
 		this.connection = null;
 		this.provisions = _variables.provisions.default || []; //provisions || [];
 		this.endpoint = endpoint || null;
