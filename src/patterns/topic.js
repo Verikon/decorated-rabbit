@@ -6,6 +6,7 @@ export default class Topic extends PatternBase{
 	constructor( main ) {
 
 		super(main);
+		this.listeners = [];
 	}
 
 	/**
@@ -90,6 +91,68 @@ export default class Topic extends PatternBase{
 			console.log('Topic Provision failed:', err);
 		}
 
+	}
+
+	/**
+	 * 
+	 * @param {String} topic the topic/pattern to listen to
+	 * @param {Function} handler the handler function
+	 * @param {Object} options an options object
+	 * @param {String} options.exchange the exchange to publish to, default 'amq.topic'
+	 * @param {String} options.parser 'json', 'protobuf' or 'string', default is string. 
+	 */
+	async listen( topic, handler, options={}) {
+
+		const exchange = options.exchange || 'amq.topic';
+		const parser = options.parser || 'string';
+
+		//gain a channel.
+		const channel = await this.mq.connection.createChannel();
+
+		//asert the exchange
+		channel.assertExchange(exchange, 'topic', {durable: false});
+
+		//build the queue
+		const queue = await channel.assertQueue('', {exclusive:true});
+
+		//bind the channel to the queue
+		channel.bindQueue(queue.queue, exchange, topic);
+
+		//set up the consumer
+		const consumer = await channel.consume(queue.queue, async msg => {
+
+			let contents,
+				parsedMessage,
+				routingKeys,
+				response;
+
+			routingKeys = msg.fields.routingKey.split('.');
+			contents = msg.content.toString();
+
+			switch(parser) {
+				case 'json':
+					parsedMessage = JSON.parse(contents); break;
+				case 'string':
+					parsedMessage = contents; break;
+				default:
+					throw new Error(`Message received but could not be parsed, invalid parser "${parser}"`);
+				
+			}
+
+			response = handler(parsedMessage, routingKeys);
+
+		}, {noAck: true});
+
+		//console.log('Provisioned Topic::'+endpoint+ ' --- '+JSON.stringify(provision.options));
+
+		const reference = {
+			channel: channel,
+			tag: consumer.consumerTag
+		}
+
+		this.listeners.push(reference);
+
+		return Object.assign({success:true}, reference);
 	}
 
 	/**
