@@ -104,12 +104,16 @@ let Topic = class Topic extends _PatternBase2.default {
   * @param {Function} handler the handler function
   * @param {Object} options an options object
   * @param {String} options.exchange the exchange to publish to, default 'amq.topic'
-  * @param {String} options.parser 'json', 'protobuf' or 'string', default is string. 
+  * @param {String} options.parser 'json', 'protobuf' or 'string', default is string.
+  * @param {*} options.context the context in which to execute the handler.
   */
 	async listen(topic, handler, options = {}) {
 
 		const exchange = options.exchange || 'amq.topic';
 		const parser = options.parser || 'string';
+
+		//apply the handler context
+		handler = options.context === undefined ? handler : handler.bind(options.context);
 
 		//gain a channel.
 		const channel = await this.mq.connection.createChannel();
