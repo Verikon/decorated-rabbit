@@ -118,7 +118,8 @@ let Topic = class Topic extends _PatternBase2.default {
 		//gain a channel.
 		const channel = await this.mq.connection.createChannel();
 
-		//asert the exchange
+		//assert the exchange
+		console.log('ASSSSSSSSSSSSSERTING EXCHANGE');
 		channel.assertExchange(exchange, 'topic', { durable: false });
 
 		//build the queue

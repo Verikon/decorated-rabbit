@@ -113,7 +113,7 @@ export default class Topic extends PatternBase{
 		//gain a channel.
 		const channel = await this.mq.connection.createChannel();
 
-		//asert the exchange
+		//assert the exchange
 		channel.assertExchange(exchange, 'topic', {durable: false});
 
 		//build the queue
