@@ -115,11 +115,15 @@ let Topic = class Topic extends _PatternBase2.default {
 		//apply the handler context
 		handler = options.context === undefined ? handler : handler.bind(options.context);
 
-		//gain a channel.
-		const channel = await this.mq.connection.createChannel();
+		//assertion options
+		const assertOptions = {
+			durable: options.durable === undefined ? false : options.durable
+
+			//gain a channel.
+		};const channel = await this.mq.connection.createChannel();
 
 		//assert the exchange
-		channel.assertExchange(exchange, 'topic', { durable: false });
+		channel.assertExchange(exchange, 'topic', { durable: assertOptions });
 
 		//build the queue
 		const queue = await channel.assertQueue('', { exclusive: true });
