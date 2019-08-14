@@ -178,6 +178,8 @@ export default class Topic extends PatternBase{
 
 			options = options || {};
 
+			const durable = options.durable === undefined ? false : options.durable;
+
 			//gain a channel.
 			const channel = await this.mq.connection.createChannel();
 			
@@ -185,8 +187,10 @@ export default class Topic extends PatternBase{
 			exchange = exchange || this.mq.exchange;
 			assert(exchange, 'Could not publish message - exchange could not be determined. Option "exchange": "<ExchangeName>"');
 
+
+
 			//assert the exchange.
-			channel.assertExchange(exchange, 'topic', {durable: false});
+			channel.assertExchange(exchange, 'topic', {durable});
 
 			if(options.log) {
 				console.log('Publishing to '+topic+' on exchange '+exchange+':');

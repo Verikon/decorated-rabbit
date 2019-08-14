@@ -1,6 +1,6 @@
 {
 	"name": "decorated-rabbit",
-	"version": "0.1.29",
+	"version": "0.1.30",
 	"main": "./dist/index.js",
 	"types": "./src/index.d.ts",
 	"repository": "git@github.com:Verikon/decorated-rabbit.git",
